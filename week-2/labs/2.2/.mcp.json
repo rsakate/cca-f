@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "northpeak-orders": {
+      "command": "/Users/rohit.sakate/Documents/mediware/cca-f/.venv/bin/python3",
+      "args": ["mcp_servers/orders_server.py"]
+    },
+    "northpeak-docs": {
+      "command": "/Users/rohit.sakate/Documents/mediware/cca-f/.venv/bin/python3",
+      "args": ["mcp_servers/docs_server.py"]
+    }
+  }
+}
