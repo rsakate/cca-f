@@ -1,0 +1,41 @@
+name: Claude PR Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Claude Code
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Capture PR diff
+        run: git diff origin/${{ github.event.pull_request.base.ref }}...HEAD > pr.diff
+
+      - name: Run headless Claude review
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          claude -p "$(cat .claude/commands/pr-review.md)
+
+          Here is the diff to review:
+
+          $(cat pr.diff)" --output-format json --allowedTools "Read" > review.json
+
+      - name: Gate on review verdict
+        run: python scripts/review_gate.py review.json
