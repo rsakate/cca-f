@@ -3,3 +3,4 @@ python-dotenv>=1.2.2
 mcp>=1.2.0
 google-auth>=2.38.0
 requests>=2.32.0
+pytest>=8.0.0
