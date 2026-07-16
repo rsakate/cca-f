@@ -13,6 +13,7 @@ Do **not** edit files — only report findings.
 2. **Type hints**: All public functions have parameter and return type annotations.
 3. **Input validation**: Public functions validate their inputs and raise `ValueError` for bad data.
 4. **Docstrings**: Every public function has a one-line docstring.
+5. **Pure functions**: Functions avoid global state and side effects; use `round()` for monetary values.
 
 ## Output format
 

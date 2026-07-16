@@ -27,6 +27,15 @@ def shipping_cost(weight_kg: float) -> float:
     return round(5.99 + (weight_kg - 5) * 1.50, 2)
 
 
+def gift_wrap_fee(price: float) -> float:
+    """Return the gift-wrap fee for an item based on its price."""
+    if not isinstance(price, (int, float)):
+        raise ValueError("price must be a number")
+    if price < 0:
+        raise ValueError("price must be non-negative")
+    return round(price * 0.05, 2)
+
+
 def order_total(subtotal: float, is_premium: bool, weight_kg: float) -> float:
     """Return the final order total after discount and shipping."""
     if not isinstance(subtotal, (int, float)):
