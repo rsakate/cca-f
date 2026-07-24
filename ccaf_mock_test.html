@@ -1,0 +1,1961 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CCA-F Mock Exam Suite | Claude Certified Architect - Foundations</title>
+<style>
+  :root {
+    --bg: #0f172a; --surface: #1e293b; --card: #334155;
+    --primary: #6366f1; --primary-light: #818cf8; --primary-dark: #4f46e5;
+    --success: #10b981; --success-bg: rgba(16,185,129,0.1);
+    --danger: #ef4444; --danger-bg: rgba(239,68,68,0.1);
+    --warning: #f59e0b; --warning-bg: rgba(245,158,11,0.1);
+    --text: #e2e8f0; --text-muted: #94a3b8; --text-dim: #64748b;
+    --border: #475569; --accent: #a78bfa;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Segoe UI',system-ui,-apple-system,sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+
+  /* Landing Page */
+  .landing { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; padding:2rem; text-align:center; }
+  .landing h1 { font-size:2.5rem; margin-bottom:0.5rem; background:linear-gradient(135deg,var(--primary-light),var(--accent)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+  .landing .subtitle { color:var(--text-muted); font-size:1.1rem; margin-bottom:2rem; }
+  .exam-info { background:var(--surface); border-radius:16px; padding:2rem; max-width:700px; width:100%; margin-bottom:2rem; border:1px solid var(--border); }
+  .exam-info h3 { color:var(--primary-light); margin-bottom:1rem; }
+  .info-grid { display:grid; grid-template-columns:1fr 1fr; gap:1rem; text-align:left; }
+  .info-item { display:flex; align-items:center; gap:0.5rem; }
+  .info-item .label { color:var(--text-muted); font-size:0.85rem; }
+  .info-item .value { color:var(--text); font-weight:600; }
+
+  .mode-cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:1rem; max-width:700px; width:100%; margin-bottom:2rem; }
+  .mode-card { background:var(--surface); border:2px solid var(--border); border-radius:12px; padding:1.5rem; cursor:pointer; transition:all 0.3s; }
+  .mode-card:hover, .mode-card.selected { border-color:var(--primary); background:rgba(99,102,241,0.1); }
+  .mode-card h4 { color:var(--primary-light); margin-bottom:0.5rem; }
+  .mode-card p { color:var(--text-muted); font-size:0.85rem; }
+
+  .module-select { max-width:700px; width:100%; margin-bottom:2rem; }
+  .module-select h3 { color:var(--text); margin-bottom:1rem; text-align:left; }
+  .module-chips { display:flex; flex-wrap:wrap; gap:0.5rem; }
+  .chip { padding:0.5rem 1rem; border-radius:20px; border:1px solid var(--border); background:var(--surface); color:var(--text-muted); cursor:pointer; font-size:0.85rem; transition:all 0.3s; user-select:none; }
+  .chip.active { background:var(--primary); border-color:var(--primary); color:#fff; }
+  .chip:hover { border-color:var(--primary-light); }
+
+  .btn { padding:0.75rem 2rem; border-radius:10px; border:none; font-size:1rem; font-weight:600; cursor:pointer; transition:all 0.3s; }
+  .btn-primary { background:var(--primary); color:#fff; }
+  .btn-primary:hover { background:var(--primary-dark); transform:translateY(-1px); }
+  .btn-primary:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
+  .btn-outline { background:transparent; border:2px solid var(--primary); color:var(--primary-light); }
+  .btn-outline:hover { background:rgba(99,102,241,0.1); }
+  .btn-success { background:var(--success); color:#fff; }
+  .btn-danger { background:var(--danger); color:#fff; }
+
+  /* Quiz Container */
+  .quiz-container { display:none; max-width:900px; margin:0 auto; padding:2rem; }
+
+  /* Top Bar */
+  .top-bar { display:flex; justify-content:space-between; align-items:center; padding:1rem 1.5rem; background:var(--surface); border-radius:12px; margin-bottom:1.5rem; border:1px solid var(--border); position:sticky; top:1rem; z-index:100; backdrop-filter:blur(12px); }
+  .timer { font-size:1.2rem; font-weight:700; font-family:'Courier New',monospace; }
+  .timer.warning { color:var(--warning); }
+  .timer.danger { color:var(--danger); animation:pulse 1s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+  .progress-info { display:flex; align-items:center; gap:1rem; }
+  .progress-bar-container { width:200px; height:8px; background:var(--card); border-radius:4px; overflow:hidden; }
+  .progress-bar { height:100%; background:linear-gradient(90deg,var(--primary),var(--accent)); transition:width 0.5s; border-radius:4px; }
+  .progress-text { font-size:0.85rem; color:var(--text-muted); }
+
+  /* Question Card */
+  .question-card { background:var(--surface); border-radius:16px; padding:2rem; margin-bottom:1.5rem; border:1px solid var(--border); transition:all 0.3s; }
+  .question-card.answered { border-left:4px solid var(--primary); }
+  .question-card.correct { border-left:4px solid var(--success); }
+  .question-card.incorrect { border-left:4px solid var(--danger); }
+
+  .scenario-badge { display:inline-block; padding:0.3rem 0.8rem; background:rgba(99,102,241,0.15); color:var(--primary-light); border-radius:6px; font-size:0.75rem; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:1rem; }
+  .module-badge { display:inline-block; padding:0.3rem 0.8rem; background:rgba(167,139,250,0.15); color:var(--accent); border-radius:6px; font-size:0.75rem; font-weight:600; margin-bottom:1rem; margin-left:0.5rem; }
+
+  .question-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1rem; }
+  .question-number { color:var(--text-muted); font-size:0.9rem; }
+  .points-badge { padding:0.2rem 0.6rem; background:var(--card); border-radius:6px; font-size:0.75rem; color:var(--text-muted); }
+  .flag-btn { background:none; border:none; cursor:pointer; font-size:1.2rem; padding:0.2rem; transition:transform 0.2s; }
+  .flag-btn:hover { transform:scale(1.2); }
+  .flag-btn.flagged { color:var(--warning); }
+
+  .question-text { font-size:1.05rem; line-height:1.7; margin-bottom:1.5rem; color:var(--text); }
+  .question-text code { background:var(--card); padding:0.15rem 0.4rem; border-radius:4px; font-family:'Fira Code','Courier New',monospace; font-size:0.9rem; color:var(--accent); }
+
+  .options-list { display:flex; flex-direction:column; gap:0.75rem; }
+  .option { display:flex; align-items:flex-start; gap:0.75rem; padding:1rem; border-radius:10px; border:2px solid var(--border); cursor:pointer; transition:all 0.2s; }
+  .option:hover { border-color:var(--primary-light); background:rgba(99,102,241,0.05); }
+  .option.selected { border-color:var(--primary); background:rgba(99,102,241,0.1); }
+  .option.correct-answer { border-color:var(--success); background:var(--success-bg); }
+  .option.wrong-answer { border-color:var(--danger); background:var(--danger-bg); }
+  .option-letter { width:28px; height:28px; border-radius:50%; background:var(--card); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.85rem; flex-shrink:0; margin-top:2px; }
+  .option.selected .option-letter { background:var(--primary); color:#fff; }
+  .option.correct-answer .option-letter { background:var(--success); color:#fff; }
+  .option.wrong-answer .option-letter { background:var(--danger); color:#fff; }
+  .option-text { font-size:0.95rem; line-height:1.5; }
+  .option code { background:var(--card); padding:0.1rem 0.3rem; border-radius:3px; font-family:'Fira Code','Courier New',monospace; font-size:0.85rem; color:var(--accent); }
+
+  .explanation { margin-top:1.5rem; padding:1rem 1.5rem; background:rgba(99,102,241,0.08); border-radius:10px; border-left:3px solid var(--primary); display:none; }
+  .explanation.show { display:block; animation:fadeIn 0.4s; }
+  .explanation h4 { color:var(--primary-light); margin-bottom:0.5rem; font-size:0.9rem; }
+  .explanation p { color:var(--text-muted); font-size:0.9rem; line-height:1.6; }
+  .explanation code { background:var(--card); padding:0.1rem 0.3rem; border-radius:3px; font-family:'Fira Code','Courier New',monospace; font-size:0.85rem; color:var(--accent); }
+
+  @keyframes fadeIn { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:translateY(0)} }
+
+  /* Navigation */
+  .nav-bar { display:flex; justify-content:space-between; align-items:center; padding:1rem; margin-bottom:2rem; }
+  .nav-dots { display:flex; gap:4px; flex-wrap:wrap; max-width:500px; justify-content:center; }
+  .nav-dot { width:20px; height:20px; border-radius:50%; border:2px solid var(--border); background:transparent; cursor:pointer; font-size:0.55rem; display:flex; align-items:center; justify-content:center; color:var(--text-dim); transition:all 0.2s; }
+  .nav-dot.current { border-color:var(--primary); background:var(--primary); color:#fff; }
+  .nav-dot.answered { background:var(--card); border-color:var(--text-muted); color:var(--text); }
+  .nav-dot.flagged { border-color:var(--warning); }
+  .nav-dot.correct { background:var(--success); border-color:var(--success); color:#fff; }
+  .nav-dot.incorrect { background:var(--danger); border-color:var(--danger); color:#fff; }
+
+  /* Results */
+  .results-container { display:none; max-width:900px; margin:0 auto; padding:2rem; }
+  .results-header { text-align:center; margin-bottom:2rem; }
+  .score-circle { width:180px; height:180px; border-radius:50%; margin:0 auto 1.5rem; display:flex; flex-direction:column; align-items:center; justify-content:center; border:6px solid; }
+  .score-circle.pass { border-color:var(--success); }
+  .score-circle.fail { border-color:var(--danger); }
+  .score-value { font-size:3rem; font-weight:800; }
+  .score-label { font-size:0.85rem; color:var(--text-muted); }
+  .pass-status { font-size:1.5rem; font-weight:700; margin-bottom:1rem; }
+  .pass-status.pass { color:var(--success); }
+  .pass-status.fail { color:var(--danger); }
+
+  .stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:1rem; margin-bottom:2rem; }
+  .stat-card { background:var(--surface); border-radius:12px; padding:1.25rem; text-align:center; border:1px solid var(--border); }
+  .stat-value { font-size:1.8rem; font-weight:700; }
+  .stat-label { font-size:0.8rem; color:var(--text-muted); margin-top:0.25rem; }
+
+  .module-breakdown { background:var(--surface); border-radius:16px; padding:2rem; border:1px solid var(--border); margin-bottom:2rem; }
+  .module-breakdown h3 { margin-bottom:1.5rem; color:var(--primary-light); }
+  .module-row { display:flex; align-items:center; gap:1rem; padding:0.75rem 0; border-bottom:1px solid var(--border); }
+  .module-row:last-child { border-bottom:none; }
+  .module-name { width:250px; font-size:0.9rem; }
+  .module-bar-bg { flex:1; height:12px; background:var(--card); border-radius:6px; overflow:hidden; }
+  .module-bar-fill { height:100%; border-radius:6px; transition:width 1s; }
+  .module-pct { width:50px; text-align:right; font-weight:700; font-size:0.9rem; }
+
+  .review-section { margin-top:2rem; }
+  .review-section h3 { color:var(--primary-light); margin-bottom:1rem; }
+  .review-filter { display:flex; gap:0.5rem; margin-bottom:1.5rem; flex-wrap:wrap; }
+  .filter-btn { padding:0.4rem 1rem; border-radius:20px; border:1px solid var(--border); background:var(--surface); color:var(--text-muted); cursor:pointer; font-size:0.85rem; transition:all 0.2s; }
+  .filter-btn.active { background:var(--primary); border-color:var(--primary); color:#fff; }
+
+  /* Responsive */
+  @media (max-width:768px) {
+    .landing h1 { font-size:1.8rem; }
+    .info-grid { grid-template-columns:1fr; }
+    .top-bar { flex-direction:column; gap:0.75rem; }
+    .nav-dots { max-width:100%; }
+    .question-card { padding:1.25rem; }
+    .stats-grid { grid-template-columns:1fr 1fr; }
+    .module-name { width:120px; font-size:0.8rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ==================== LANDING PAGE ==================== -->
+<div class="landing" id="landingPage">
+  <h1>CCA-F Mock Exam Suite</h1>
+  <p class="subtitle">Claude Certified Architect - Foundations</p>
+
+  <div class="exam-info">
+    <h3>Exam Details</h3>
+    <div class="info-grid">
+      <div class="info-item"><div><div class="label">Total Questions</div><div class="value" id="totalQDisplay">110</div></div></div>
+      <div class="info-item"><div><div class="label">Points Per Question</div><div class="value">15 pts</div></div></div>
+      <div class="info-item"><div><div class="label">Time Limit</div><div class="value" id="timeLimitDisplay">90 minutes</div></div></div>
+      <div class="info-item"><div><div class="label">Passing Score</div><div class="value">70%</div></div></div>
+    </div>
+  </div>
+
+  <div class="module-select">
+    <h3>Select Modules (click to toggle)</h3>
+    <div class="module-chips">
+      <chip class="chip active" data-module="all" onclick="toggleModule(this)">All Modules</chip>
+      <chip class="chip active" data-module="1" onclick="toggleModule(this)">M1: Agentic Architecture</chip>
+      <chip class="chip active" data-module="2" onclick="toggleModule(this)">M2: Tools & MCP</chip>
+      <chip class="chip active" data-module="3" onclick="toggleModule(this)">M3: Config & Workflows</chip>
+      <chip class="chip active" data-module="4" onclick="toggleModule(this)">M4: Prompt Engineering</chip>
+      <chip class="chip active" data-module="5" onclick="toggleModule(this)">M5: Context & Reliability</chip>
+    </div>
+  </div>
+
+  <div class="mode-cards">
+    <div class="mode-card selected" data-mode="exam" onclick="selectMode(this)">
+      <h4>Exam Mode</h4>
+      <p>Timed test, no feedback until the end. Simulates the real exam experience.</p>
+    </div>
+    <div class="mode-card" data-mode="practice" onclick="selectMode(this)">
+      <h4>Practice Mode</h4>
+      <p>Instant feedback after each question with detailed explanations.</p>
+    </div>
+    <div class="mode-card" data-mode="review" onclick="selectMode(this)">
+      <h4>Review Mode</h4>
+      <p>All answers shown. Study explanations for every question.</p>
+    </div>
+  </div>
+
+  <button class="btn btn-primary" onclick="startExam()" id="startBtn">Start Exam</button>
+</div>
+
+<!-- ==================== QUIZ PAGE ==================== -->
+<div class="quiz-container" id="quizPage">
+  <div class="top-bar" id="topBar">
+    <div class="progress-info">
+      <div class="progress-bar-container"><div class="progress-bar" id="progressBar"></div></div>
+      <span class="progress-text" id="progressText">0 / 110</span>
+    </div>
+    <div class="timer" id="timerDisplay">90:00</div>
+    <button class="btn btn-outline" onclick="submitExam()" id="submitBtn">Submit Exam</button>
+  </div>
+
+  <div id="questionArea"></div>
+
+  <div class="nav-bar">
+    <button class="btn btn-outline" onclick="prevQuestion()" id="prevBtn">Previous</button>
+    <div class="nav-dots" id="navDots"></div>
+    <button class="btn btn-primary" onclick="nextQuestion()" id="nextBtn">Next</button>
+  </div>
+</div>
+
+<!-- ==================== RESULTS PAGE ==================== -->
+<div class="results-container" id="resultsPage">
+  <div class="results-header">
+    <h1 style="margin-bottom:1.5rem">Exam Results</h1>
+    <div class="score-circle" id="scoreCircle">
+      <div class="score-value" id="scoreValue">0%</div>
+      <div class="score-label">Score</div>
+    </div>
+    <div class="pass-status" id="passStatus">--</div>
+  </div>
+
+  <div class="stats-grid" id="statsGrid"></div>
+  <div class="module-breakdown" id="moduleBreakdown"><h3>Module Breakdown</h3><div id="moduleRows"></div></div>
+
+  <div class="review-section">
+    <h3>Question Review</h3>
+    <div class="review-filter">
+      <button class="filter-btn active" onclick="filterReview('all',this)">All</button>
+      <button class="filter-btn" onclick="filterReview('incorrect',this)">Incorrect</button>
+      <button class="filter-btn" onclick="filterReview('correct',this)">Correct</button>
+      <button class="filter-btn" onclick="filterReview('flagged',this)">Flagged</button>
+      <button class="filter-btn" onclick="filterReview('unanswered',this)">Unanswered</button>
+    </div>
+    <div id="reviewArea"></div>
+  </div>
+
+  <div style="text-align:center;margin-top:2rem;padding-bottom:3rem;">
+    <button class="btn btn-primary" onclick="retakeExam()" style="margin-right:1rem">Retake Exam</button>
+    <button class="btn btn-outline" onclick="location.reload()">Back to Home</button>
+  </div>
+</div>
+
+<script>
+// ============================================================
+//  QUESTION BANK — 80 scenario-based questions across 5 modules
+// ============================================================
+const QUESTIONS = [
+
+// ──────────────────────────────────────────────
+//  MODULE 1 — AGENTIC ARCHITECTURE (16 Qs)
+// ──────────────────────────────────────────────
+{
+  id:1, module:1, scenario:"Multi-Agent Research System",
+  text:"When the coordinator agent calls a subagent using the Task tool, what is <strong>NOT</strong> automatically inherited by the subagent?",
+  options:[
+    "Parent session context and conversation history",
+    "User authentication credentials",
+    "System prompt configuration",
+    "Tool definitions available to the agent"
+  ],
+  correct:0,
+  explanation:"Subagents created via the Task tool start with a fresh context. The parent session's conversation history is NOT automatically passed — the coordinator must explicitly provide relevant context in the Task tool's prompt. Tools and system prompts are configured per-agent, not inherited."
+},
+{
+  id:2, module:1, scenario:"Multi-Agent Research System",
+  text:"Your coordinator detects that one research subagent is making repeated incorrect tool calls. What is the most reliable way to enforce compliance at the <strong>architecture level</strong>?",
+  options:[
+    "Reduce the number of tools available to that subagent via <code>allowedTools</code>",
+    "Modify the subagent's system prompt to include stricter rules",
+    "Add a validation step in the coordinator that rejects bad requests",
+    "Use a PostToolUse hook to validate tool calls before they execute"
+  ],
+  correct:0,
+  explanation:"Restricting tools via allowedTools is the most reliable architectural enforcement because it's a programmatic constraint — the subagent literally cannot call tools that aren't in its allowed list. System prompt modifications are suggestions, not guarantees. PostToolUse hooks run after execution, not before."
+},
+{
+  id:3, module:1, scenario:"Multi-Agent Research System",
+  text:"Your web search subagent needs to refine its queries based on initial results before synthesizing findings. How should you structure this in the agentic loop?",
+  options:[
+    "Let the subagent iterate internally — it sees tool results, evaluates them, and calls the search tool again if needed",
+    "Create a prompt chain that executes all searches sequentially without feedback",
+    "Have the coordinator re-invoke the subagent multiple times with updated prompts",
+    "Queue all queries in advance and execute them in parallel"
+  ],
+  correct:0,
+  explanation:"The agentic loop is designed for exactly this: the model sees tool results, decides whether to call another tool, and iterates until its stop_reason is 'end_turn'. This is the core pattern — the model drives its own refinement loop."
+},
+{
+  id:4, module:1, scenario:"Multi-Agent Research System",
+  text:"Your synthesis subagent needs to work from research conducted by both the web search and document analysis subagents. What is the recommended pattern for providing this information?",
+  options:[
+    "Pass the coordinator's summary of both subagents' findings in the Task tool call to the synthesis subagent",
+    "Have the synthesis subagent invoke both the web search and document analysis tools directly",
+    "Chain subagent calls: first get results, then invoke synthesis with those results passed as context",
+    "Have each subagent store results in a shared database that the synthesis agent queries"
+  ],
+  correct:0,
+  explanation:"Explicit context passing is the recommended pattern: the coordinator summarizes both subagents' findings into a structured context object and passes it to the synthesis subagent via the Task tool. This keeps the synthesis agent focused and avoids it needing to redo research."
+},
+{
+  id:5, module:1, scenario:"Multi-Agent Research System",
+  text:"You want the coordinator to detect when a subagent's response is incomplete and automatically trigger a refinement loop. Where should this logic be implemented?",
+  options:[
+    "In the coordinator's agentic loop — after receiving the subagent's result via the Task tool, the coordinator evaluates completeness and re-invokes if needed",
+    "In the subagent's system prompt as conditional rules",
+    "In a PostToolUse hook attached to the Task tool",
+    "In a separate validation microservice called after all subagents complete"
+  ],
+  correct:0,
+  explanation:"The coordinator's agentic loop is the right place: it receives the Task tool result, evaluates completeness using its own reasoning, and decides whether to re-invoke the subagent with targeted gap prompts. This is the hub-and-spoke model in action."
+},
+{
+  id:6, module:1, scenario:"Multi-Agent Research System",
+  text:"Your coordinator needs to route research tasks to subagents, but some tasks might be better served by multiple subagents. How should you structure this decision-making?",
+  options:[
+    "Let the coordinator use model-driven reasoning to decide: based on the research question and available subagents, decide dynamically how to partition work",
+    "Hard-code rules in the coordinator's system prompt: 'Topic X always goes to subagent A'",
+    "Create a decision tree in <code>.claude/rules/</code> that lists all topic-to-subagent mappings",
+    "Queue all possible subagent invocations and execute in parallel regardless of relevance"
+  ],
+  correct:0,
+  explanation:"Model-driven routing lets the coordinator flexibly decide which subagents to invoke based on the specific research question, rather than rigid rules. This is a key strength of agentic architecture — the model reasons about task decomposition dynamically."
+},
+{
+  id:7, module:1, scenario:"Customer Support Resolution Agent",
+  text:"Your agent processes a customer return request and after calling <code>lookup_order</code>, the response arrives with <code>stop_reason</code> set to <code>'tool_use'</code>. What should you do next in the agentic loop?",
+  options:[
+    "Inspect the assistant's message for tool_use blocks, extract the tool name/input, execute the tool externally, and append results back to conversation history",
+    "Extract the tool name and input from the stop_reason field and execute immediately",
+    "Treat the stop_reason as a signal to end the conversation and return results to the user",
+    "Automatically send another request to Claude without executing any tools yet"
+  ],
+  correct:0,
+  explanation:"When stop_reason is 'tool_use', the assistant's response content contains tool_use blocks with the tool name and input. Your code must extract these, execute the tool externally, append a tool_result message, and send back to Claude. The stop_reason itself doesn't contain the tool details — they're in the message content."
+},
+{
+  id:8, module:1, scenario:"Customer Support Resolution Agent",
+  text:"You've implemented a hub-and-spoke coordinator-subagent architecture. What critical configuration must you handle <strong>explicitly</strong> when delegating to a subagent?",
+  options:[
+    "You must explicitly pass customer context and available tools to the subagent; context is not inherited automatically",
+    "The subagent automatically inherits the parent agent's conversation history and tool access",
+    "The coordinator agent should block the subagent from calling any external tools to prevent conflicts",
+    "The Task tool creates a new session, but both agents continue using the same conversation object"
+  ],
+  correct:0,
+  explanation:"Subagents do NOT inherit parent context. You must explicitly pass relevant context (customer data, order details) and configure which tools the subagent can use. Each subagent is a separate agent instance with its own conversation history."
+},
+{
+  id:9, module:1, scenario:"Customer Support Resolution Agent",
+  text:"Your agent receives a request about a package that wasn't delivered. To enforce a prerequisite: <code>get_customer</code> and <code>lookup_order</code> must complete before <code>process_refund</code> is callable. How should you implement this <strong>programmatically</strong>?",
+  options:[
+    "Implement a PostToolUse hook that validates whether lookup_order was called; if not, raise an error preventing process_refund from executing",
+    "Write a detailed prompt asking the agent to 'always check customer details before processing refunds'",
+    "Create a pre-configured decision tree that routes sequentially",
+    "Restrict process_refund using <code>tool_choice: 'any'</code> to allow only that tool"
+  ],
+  correct:0,
+  explanation:"A PostToolUse hook provides programmatic enforcement of step ordering. It inspects the tool call history and blocks process_refund if the prerequisite tools haven't been called. This is a programmatic gate, not a prompt suggestion. Prompts can be ignored; hooks cannot."
+},
+{
+  id:10, module:1, scenario:"Customer Support Resolution Agent",
+  text:"Your coordinator implements a refinement loop. How many re-invocation rounds should you allow before considering the research 'good enough'?",
+  options:[
+    "Set a hard limit (e.g., max 3 rounds) to control costs and latency",
+    "Unlimited; iterate until the subagent reports completion",
+    "Use adaptive stopping: continue if new information is discovered, stop when returns diminish",
+    "Re-invoke once per unique gap identified, then synthesize"
+  ],
+  correct:0,
+  explanation:"A hard limit is the most practical and reliable approach. While adaptive stopping sounds ideal, it's difficult to implement reliably. A fixed limit (e.g., 3 rounds) provides predictable costs, latency, and prevents runaway loops — a key production concern."
+},
+{
+  id:11, module:1, scenario:"Developer Productivity with Claude",
+  text:"An engineer previously analyzed a legacy authentication module and identified two distinct refactoring approaches. They now want to explore both in depth. What is the most effective way to structure this exploration?",
+  options:[
+    "Use <code>fork_session</code> to create two branches from the prior analysis and explore one approach in each fork",
+    "Resume the old session and explore both approaches sequentially in one conversation",
+    "Start two fresh sessions and manually summarize yesterday's findings into each",
+    "Resume the old session for the first approach, then start a new one for the second"
+  ],
+  correct:0,
+  explanation:"fork_session creates independent branches from the existing context, letting each fork explore a different approach while preserving the original analysis. This avoids context pollution between approaches and doesn't require manual context recreation."
+},
+{
+  id:12, module:1, scenario:"Multi-Agent Research System",
+  text:"In the agentic loop, what are the possible values for <code>stop_reason</code> and when does the loop terminate?",
+  options:[
+    "The loop continues while <code>stop_reason</code> is <code>'tool_use'</code> and terminates on <code>'end_turn'</code>, <code>'max_tokens'</code>, or <code>'stop_sequence'</code>",
+    "The loop terminates only when <code>stop_reason</code> is <code>'complete'</code>",
+    "The loop continues while <code>stop_reason</code> is <code>'continue'</code> and terminates on <code>'stop'</code>",
+    "The loop checks for <code>'done'</code> in the response text to determine termination"
+  ],
+  correct:0,
+  explanation:"The key stop_reason values are: 'tool_use' (model wants to use a tool — continue looping), 'end_turn' (model is done — exit loop), 'max_tokens' (output truncated — may need to continue), 'stop_sequence' (custom stop hit), 'pause_turn' (server-side iteration limit reached), and 'refusal' (model declined). The loop continues on 'tool_use' and typically terminates on 'end_turn'."
+},
+{
+  id:13, module:1, scenario:"Customer Support Resolution Agent",
+  text:"You're designing an escalation workflow. When the agent decides a customer issue needs human review, what format best enables reliable handoff?",
+  options:[
+    "Implement a structured escalation protocol where <code>escalate_to_human</code> receives customer ID, issue summary, root cause, and recommended actions in defined fields",
+    "Call escalate_to_human with just the customer ID and let the human agent read the full conversation history",
+    "Create a text summary and pass it as a single unstructured string",
+    "Store escalation details in a database and send a reference ID"
+  ],
+  correct:0,
+  explanation:"A structured escalation protocol with defined fields (customer ID, summary, root cause, recommended actions) ensures consistent handoff quality. Unstructured summaries are unreliable, and expecting humans to read full conversation history is impractical."
+},
+{
+  id:14, module:1, scenario:"Customer Support Resolution Agent",
+  text:"Your agent handles multiple customer issues in a single conversation. You decide to use task decomposition with the Task tool to parallelize work. What's a key advantage?",
+  options:[
+    "Parallel subagents allow you to assign specialized agents to each issue (billing expert, returns expert) simultaneously, reducing latency and potentially catching issues a generalist might miss",
+    "Task decomposition guarantees all issues are resolved in the same turn",
+    "Using parallel tasks eliminates the need for the agent to understand context",
+    "Task decomposition automatically merges results from parallel subagents without any manual logic"
+  ],
+  correct:0,
+  explanation:"The key advantage is specialization + parallelism: dedicated subagents handle billing vs. returns with domain-specific tools and prompts, while running simultaneously. The coordinator still needs to merge results — that's not automatic."
+},
+{
+  id:15, module:1, scenario:"Customer Support Resolution Agent",
+  text:"Your agent's system prompt includes: 'Always verify customer identity before processing any refund.' What's the most reliable enforcement mechanism?",
+  options:[
+    "Implement a PostToolUse hook that inspects whether <code>get_customer</code> (identity verification) was called before allowing <code>process_refund</code>",
+    "Use <code>tool_choice: 'required'</code> to force the agent to always call get_customer first",
+    "Make the system prompt rule more detailed with multiple reminders",
+    "Create a separate verification agent that must sign off before any refund"
+  ],
+  correct:0,
+  explanation:"A PostToolUse hook provides programmatic enforcement — it checks whether get_customer was called and blocks process_refund if not. This is a hard gate that can't be bypassed by model reasoning. System prompt rules can be forgotten; programmatic gates cannot."
+},
+{
+  id:16, module:1, scenario:"Customer Support Resolution Agent",
+  text:"You're resuming a support session from yesterday using the <code>--resume</code> flag. The agent had gathered customer details and identified a billing dispute. What's the risk of resuming a stale session?",
+  options:[
+    "Resuming uses the old session's context window, potentially hitting limits faster if the conversation was long",
+    "Resuming is always faster and has no downsides",
+    "There's no meaningful difference between resume and fresh start",
+    "Resuming guarantees the agent remembers all context"
+  ],
+  correct:0,
+  explanation:"Resuming loads the full prior conversation into the context window. If that conversation was long, you start with much of the context budget already used, limiting room for new tool calls and responses. A fresh session with a summary gives you a clean context window."
+},
+
+// ──────────────────────────────────────────────
+//  MODULE 2 — TOOL DESIGN & MCP (16 Qs)
+// ──────────────────────────────────────────────
+{
+  id:17, module:2, scenario:"Developer Productivity with Claude",
+  text:"Engineers want the agent to cross-reference code changes with Jira tickets during reviews. What is the most effective approach?",
+  options:[
+    "Integrate an existing Jira MCP server that exposes tickets, comments, and metadata as tools",
+    "Build a custom MCP server around Jira's API for this workflow",
+    "Export Jira tickets to markdown files in the repository",
+    "Use Bash and <code>curl</code> directly against Jira's REST API"
+  ],
+  correct:0,
+  explanation:"Using an existing Jira MCP server is the most effective approach — it provides standardized tool interfaces without custom development. Building a custom server is unnecessary when established ones exist. Exporting to markdown is brittle, and raw curl lacks structured error handling."
+},
+{
+  id:18, module:2, scenario:"Developer Productivity with Claude",
+  text:"Your agent encounters an Edit tool failure: <code>'old_string is not unique in the file'</code>. What's the best recovery strategy?",
+  options:[
+    "Try Edit again with a larger substring that includes more surrounding context",
+    "Use Read to examine the file, then use Write with a complete file rewrite",
+    "Use Bash <code>sed</code> to make the change instead",
+    "Ask the user to manually edit the file"
+  ],
+  correct:0,
+  explanation:"When old_string is not unique, the fix is to include more surrounding context to make the match unique. The Edit tool requires an exact, unique string match. Using Write for a complete rewrite risks losing other content; sed is less reliable."
+},
+{
+  id:19, module:2, scenario:"Developer Productivity with Claude",
+  text:"Your agent encounters a large configuration file that the Bash <code>head</code> tool would normally read in pieces. Should the agent use the Read tool instead?",
+  options:[
+    "Yes; the Read tool is better for reading file contents because it provides line numbering and handles formatting",
+    "Use Read only if the file is less than 100 lines",
+    "No; large files should always be processed with Bash piping",
+    "No; always use Bash for efficiency"
+  ],
+  correct:0,
+  explanation:"The Read tool is specifically designed for reading files — it provides line numbering, handles large files with offset/limit parameters, and formats output consistently. Bash tools like cat/head/tail should be avoided for file reading per Claude Code best practices."
+},
+{
+  id:20, module:2, scenario:"Developer Productivity with Claude",
+  text:"When your agent uses the Glob tool to find files, what is the primary value of Glob over using Bash <code>find</code>?",
+  options:[
+    "Glob works reliably across different operating systems with consistent pattern matching",
+    "Glob returns results sorted by modification time",
+    "Glob is faster because it doesn't traverse directories",
+    "Glob can filter by file content, not just names"
+  ],
+  correct:0,
+  explanation:"Glob provides consistent cross-platform pattern matching, making it more reliable than Bash find which has different flag syntax across macOS/Linux. Glob matches file names/paths, not content (that's Grep's job)."
+},
+{
+  id:21, module:2, scenario:"Code Generation with Claude Code",
+  text:"You're building a code review tool and need Claude Code to search for specific patterns in thousands of files. Which built-in tool is optimized for this task?",
+  options:[
+    "The Grep tool, which uses ripgrep for fast content pattern matching",
+    "The Glob tool combined with individual file reads",
+    "The Read tool, which can process multiple files sequentially",
+    "The Bash tool with <code>find</code> and <code>grep</code> commands"
+  ],
+  correct:0,
+  explanation:"The Grep tool is purpose-built for fast content search across files — it uses ripgrep under the hood for high-performance pattern matching. It's the right tool for 'find this pattern in the codebase' tasks."
+},
+{
+  id:22, module:2, scenario:"Code Generation with Claude Code",
+  text:"You're designing a custom tool for your domain and want Claude Code to use it effectively. What is the <strong>most important factor</strong> in the tool definition?",
+  options:[
+    "A clear, descriptive tool description that helps the model understand when to use it",
+    "A complex implementation that shows the tool's full capabilities",
+    "A list of example use cases in the tool name",
+    "Detailed parameter documentation with many optional fields"
+  ],
+  correct:0,
+  explanation:"The tool's name and description are the most critical factors — they form the 'strong interface' that helps the model decide when and how to use the tool. A vague or generic description leads to incorrect tool selection. This is the strong vs. weak toolset distinction."
+},
+{
+  id:23, module:2, scenario:"Code Generation with Claude Code",
+  text:"You have 5 custom tools but Claude Code selects them unpredictably. What's the best approach to control tool usage?",
+  options:[
+    "Use <code>tool_choice</code> to force selection of specific tools for specific tasks",
+    "Give all tools identical descriptions to avoid bias",
+    "Run Claude Code with a simpler system prompt",
+    "List all tools in CLAUDE.md as required tools"
+  ],
+  correct:0,
+  explanation:"tool_choice provides direct control over tool selection: 'auto' (model decides), 'any' (must use a tool), 'tool' with name (force specific tool), or 'none' (no tools). When you need predictable selection for specific tasks, force the appropriate tool."
+},
+{
+  id:24, module:2, scenario:"Code Generation with Claude Code",
+  text:"Your MCP server returns structured errors with <code>errorCategory</code> and <code>isRetryable</code> fields. How should Claude Code handle a retryable error?",
+  options:[
+    "The <code>isRetryable</code> flag indicates the tool call should be retried; Claude Code should attempt the operation again",
+    "All errors should be treated identically regardless of the isRetryable flag",
+    "Retryable errors should trigger a skip to the next tool",
+    "The errorCategory determines whether the error is retried"
+  ],
+  correct:0,
+  explanation:"The isRetryable flag is the signal for retry behavior. When true, the agent should attempt the operation again (potentially with modified parameters). When false, the error is permanent and the agent should handle it differently (escalate, skip, or report). The errorCategory provides context but doesn't drive retry logic directly."
+},
+{
+  id:25, module:2, scenario:"Developer Productivity with Claude",
+  text:"Your agent needs to understand how a function is used throughout the codebase. What Grep pattern strategy should it use?",
+  options:[
+    "Try all three: search for the name, search for calls with parentheses, search for imports",
+    "Search for function calls: <code>grep 'functionName('</code>",
+    "Search for the function name: <code>grep functionName</code>",
+    "Search for imports that might use this function"
+  ],
+  correct:0,
+  explanation:"A comprehensive search requires multiple Grep passes: the function name (for declarations/references), calls with parentheses, and import statements. Each captures different usage patterns that a single search would miss."
+},
+{
+  id:26, module:2, scenario:"Developer Productivity with Claude",
+  text:"Your agent is generating boilerplate code (a database migration script) and writes it using the Write tool. After writing, what should the agent do?",
+  options:[
+    "Read the file back to verify the generated content matches expectations",
+    "Immediately return the file path to the user",
+    "Run Bash to execute the generated code and verify it works",
+    "Ask the user to review the generated code before using it"
+  ],
+  correct:0,
+  explanation:"Reading the file back after writing is best practice — it verifies the content was written correctly and matches expectations. This is especially important for generated code like migrations where errors can be destructive."
+},
+{
+  id:27, module:2, scenario:"Code Generation with Claude Code",
+  text:"Your project uses MCP servers for database access. Where should you store the <code>.mcp.json</code> configuration so it's shared with the team?",
+  options:[
+    "In the project root or <code>.claude/</code> directory to be version-controlled",
+    "In <code>~/.claude.json</code> in each user's home directory",
+    "In the <code>.claude/rules/</code> directory with path matching",
+    "In a <code>.mcp/</code> directory in the project root"
+  ],
+  correct:0,
+  explanation:".mcp.json should be in the project root or .claude/ directory so it's version-controlled and shared via the repository. User-level config (~/.claude.json) wouldn't be shared, and .claude/rules/ is for path-specific instructions."
+},
+{
+  id:28, module:2, scenario:"Code Generation with Claude Code",
+  text:"<code>.mcp.json</code> contains database credentials. How should you handle credential storage securely?",
+  options:[
+    "Use environment variable expansion in .mcp.json (e.g., <code>$DB_PASSWORD</code>) and store variables locally",
+    "Embed credentials directly in .mcp.json and restrict file permissions",
+    "Store credentials in <code>.claude/secrets.json</code> with additional encryption",
+    "Use a separate <code>.env.local</code> file that .mcp.json references"
+  ],
+  correct:0,
+  explanation:".mcp.json supports environment variable expansion ($VAR syntax). Store the config file in version control with variable references, and each developer sets the actual values locally via their environment. This keeps secrets out of the repository."
+},
+{
+  id:29, module:2, scenario:"Developer Productivity with Claude",
+  text:"An engineer asks the agent to find all callers of a function. The function is exposed through wrapper modules that rename it. What exploration strategy will most reliably identify all callers?",
+  options:[
+    "Read the library and wrapper modules to identify all exposed names for the function, then Grep for each name across the codebase",
+    "Use Grep to search for the function's original name across the codebase",
+    "Find all files that import from the library or wrapper modules, then read them to check usage",
+    "Search project documentation to understand intended usage patterns"
+  ],
+  correct:0,
+  explanation:"When a function is re-exported under different names via wrappers, you must first identify ALL the names (original + aliases), then Grep for each. Searching only the original name misses renamed imports. This is the incremental exploration pattern."
+},
+{
+  id:30, module:2, scenario:"Developer Productivity with Claude",
+  text:"What does MCP's <strong>STDIO transport</strong> provide versus <strong>StreamableHTTP</strong>?",
+  options:[
+    "STDIO runs the server as a local subprocess communicating via stdin/stdout; StreamableHTTP runs as a remote HTTP service",
+    "STDIO is for streaming responses; StreamableHTTP is for batch processing",
+    "STDIO is deprecated in favor of StreamableHTTP for all use cases",
+    "STDIO requires WebSocket connections; StreamableHTTP uses REST"
+  ],
+  correct:0,
+  explanation:"STDIO transport spawns the MCP server as a local child process, communicating via stdin/stdout — ideal for local tools. StreamableHTTP runs the server as a remote HTTP service, suitable for shared or cloud-hosted tools. Both are actively supported for different use cases."
+},
+{
+  id:31, module:2, scenario:"Developer Productivity with Claude",
+  text:"Your agent is exploring a large codebase and finds 150 matching files with a Glob pattern. What should it do next to understand file relationships?",
+  options:[
+    "Use Grep to search for import statements, function calls, and dependencies across the matched files",
+    "Use Read to open all 150 files and analyze them",
+    "Use Bash to generate a dependency graph automatically",
+    "Ask the user which files are important"
+  ],
+  correct:0,
+  explanation:"With 150 files, reading all of them would overwhelm the context window. Grep lets you search for specific patterns (imports, function calls) across all matched files to understand relationships without loading full file contents."
+},
+{
+  id:32, module:2, scenario:"Developer Productivity with Claude",
+  text:"Your agent needs to understand the dependency structure of a large codebase. What's the most efficient approach?",
+  options:[
+    "Use Glob to find file patterns (imports, module declarations) and Grep to map relationships",
+    "Read every file in the codebase",
+    "Use Bash to run build tools or language-specific analysis",
+    "Visualize the entire codebase first with external tools"
+  ],
+  correct:0,
+  explanation:"Combining Glob (to find relevant files by pattern) with Grep (to trace imports and dependencies) is the efficient built-in approach. Reading everything is impractical; build tools may not be available."
+},
+
+// ──────────────────────────────────────────────
+//  MODULE 3 — CONFIG & WORKFLOWS (16 Qs)
+// ──────────────────────────────────────────────
+{
+  id:33, module:3, scenario:"Code Generation with Claude Code",
+  text:"Your team has a monorepo with different services. You want to create a custom command that generates boilerplate for a new microservice. Where should this command be stored?",
+  options:[
+    "<code>.claude/commands/</code> in the project root",
+    "A dedicated <code>/commands</code> directory at the repository root",
+    "<code>~/.claude/commands/</code> in the user's home directory",
+    "<code>.claude/microservice_generator.md</code> in the project"
+  ],
+  correct:0,
+  explanation:"Project-level custom commands go in .claude/commands/ — they're version-controlled and shared with the team. User-level commands (~/.claude/commands/) are personal. The command file is a markdown file with the prompt template."
+},
+{
+  id:34, module:3, scenario:"Code Generation with Claude Code",
+  text:"You're making a complex refactor that touches 8 files with interconnected architectural decisions. Should you use <strong>plan mode</strong> or <strong>direct execution</strong>?",
+  options:[
+    "Use plan mode to outline the refactoring strategy before making changes",
+    "Use direct execution since Claude Code handles file dependencies automatically",
+    "Use direct execution for speed, since plan mode adds unnecessary overhead",
+    "Use plan mode only if the refactor affects more than 10 files"
+  ],
+  correct:0,
+  explanation:"Plan mode is designed for exactly this: complex, multi-file changes requiring architectural decisions. It lets you explore the codebase, design the approach, and get alignment before making changes. The threshold isn't about file count — it's about complexity and interconnectedness."
+},
+{
+  id:35, module:3, scenario:"Code Generation with Claude Code",
+  text:"Your project has a <code>.claude/CLAUDE.md</code> and a <code>.claude/rules/</code> directory. A developer edits files in <code>/services/auth</code>. How does Claude Code determine which rules apply?",
+  options:[
+    "Rules with glob patterns matching the file path, plus the nearest directory-level CLAUDE.md, plus project-level CLAUDE.md",
+    "All rules in .claude/rules/ are always applied regardless of file path",
+    "Rules are loaded in the order they appear in the .claude/rules/ directory",
+    "Only rules explicitly imported via @import in the project CLAUDE.md"
+  ],
+  correct:0,
+  explanation:"Rules in .claude/rules/ have glob frontmatter (e.g., ---\\nglobs: services/auth/**\\n---). Only rules whose glob patterns match the current file path are loaded, combined with CLAUDE.md files at the project and local directory levels. This is the 3-level hierarchy."
+},
+{
+  id:36, module:3, scenario:"Code Generation with Claude Code",
+  text:"You've created a skill in <code>.claude/skills/test_generator/</code> with <code>context: fork</code> in the frontmatter. What does this configuration do?",
+  options:[
+    "The skill runs in an isolated sub-agent with its own context, preventing pollution of the main Claude Code session",
+    "The skill forks the project repository, creating a temporary branch",
+    "The skill executes in the current session context, sharing all files and previous interactions",
+    "The skill runs in parallel with the main session, allowing concurrent operations"
+  ],
+  correct:0,
+  explanation:"context: fork creates an isolated sub-agent for the skill. The skill gets its own fresh context window and doesn't pollute the main session with its tool calls and intermediate state. Results are returned to the main session when the skill completes."
+},
+{
+  id:37, module:3, scenario:"Code Generation with Claude Code",
+  text:"You want to create a skill that can read files but should NOT have access to write, edit, or execute commands. How do you restrict it?",
+  options:[
+    "Use <code>allowed-tools</code> in the skill's SKILL.md frontmatter to specify only read and glob tools",
+    "Skills inherit restrictions from CLAUDE.md; define rules in the project configuration",
+    "Create the skill in <code>~/.claude/skills/</code> instead of <code>.claude/skills/</code>",
+    "Add a <code>no-write</code> flag to the skill's frontmatter"
+  ],
+  correct:0,
+  explanation:"The allowed-tools field in SKILL.md frontmatter explicitly lists which tools the skill can use. If you only include Read and Glob, the skill cannot Write, Edit, or use Bash. This is the principal of least privilege applied to skills."
+},
+{
+  id:38, module:3, scenario:"Code Generation with Claude Code",
+  text:"Your team runs Claude Code in a CI/CD pipeline using the <code>-p</code> flag. What does this flag enable?",
+  options:[
+    "Non-interactive mode for CI execution without requiring user prompts or approval",
+    "Plan-mode-only execution, forcing all changes to go through planning first",
+    "Parallel execution, allowing multiple Claude Code instances to run simultaneously",
+    "Performance profiling to measure execution time and resource usage"
+  ],
+  correct:0,
+  explanation:"The -p flag enables non-interactive (pipe/programmatic) mode — Claude Code runs without prompting for user approval, making it suitable for CI/CD pipelines. Combined with --output-format json, it provides structured output for automated processing."
+},
+{
+  id:39, module:3, scenario:"Code Generation with Claude Code",
+  text:"Your CLAUDE.md file is getting large and hard to manage. You want to split common standards into separate files. How do you reference them?",
+  options:[
+    "Use <code>@import</code> syntax to modularly reference other configuration files",
+    "Create multiple CLAUDE.md files in different <code>.claude/</code> subdirectories",
+    "Split the file manually and configure path matching in <code>.claude/rules/</code>",
+    "Use <code>include:</code> directives in the CLAUDE.md header"
+  ],
+  correct:0,
+  explanation:"CLAUDE.md supports @import syntax (e.g., @import ./standards/coding.md) to modularly reference other files. This keeps the main CLAUDE.md concise while allowing shared standards to be maintained in separate files."
+},
+{
+  id:40, module:3, scenario:"Code Generation with Claude Code",
+  text:"What is the correct <strong>3-level hierarchy</strong> for CLAUDE.md files, from broadest to most specific?",
+  options:[
+    "User (<code>~/.claude/CLAUDE.md</code>) → Project (<code>./CLAUDE.md</code>) → Local (<code>./subfolder/CLAUDE.md</code>)",
+    "System (<code>/etc/claude/CLAUDE.md</code>) → User (<code>~/.claude/CLAUDE.md</code>) → Project (<code>./CLAUDE.md</code>)",
+    "Global (<code>./CLAUDE.md</code>) → Module (<code>./src/CLAUDE.md</code>) → Component (<code>./src/auth/CLAUDE.md</code>)",
+    "Project (<code>./CLAUDE.md</code>) → Rules (<code>.claude/rules/</code>) → Skills (<code>.claude/skills/</code>)"
+  ],
+  correct:0,
+  explanation:"The 3-level hierarchy is: User-level (~/.claude/CLAUDE.md, personal preferences), Project-level (./CLAUDE.md, team standards), and Local/directory-level (./subfolder/CLAUDE.md, area-specific rules). More specific levels can override broader ones."
+},
+{
+  id:41, module:3, scenario:"Code Generation with Claude Code",
+  text:"You want to use <code>/memory</code> to debug why Claude Code isn't following your project's conventions. What does <code>/memory</code> show?",
+  options:[
+    "The currently loaded CLAUDE.md instructions from all levels (user, project, local) and any active rules",
+    "The user's conversation history from previous sessions",
+    "A list of all custom commands and skills defined in the project",
+    "The model's training data relevant to the current project"
+  ],
+  correct:0,
+  explanation:"/memory shows the active instructions loaded from all CLAUDE.md levels plus path-specific rules. It's a debugging tool to verify what instructions Claude Code is actually seeing — useful when conventions aren't being followed."
+},
+{
+  id:42, module:3, scenario:"Code Generation with Claude Code",
+  text:"What is the recommended iterative workflow pattern in Claude Code?",
+  options:[
+    "Explore → Plan → Code → Commit: investigate first, plan the approach, implement, then commit",
+    "Code → Test → Commit → Review: implement immediately, test, and iterate",
+    "Plan → Execute → Deploy: formal planning document, then direct execution",
+    "Read → Write → Test: sequentially read, write, and test files"
+  ],
+  correct:0,
+  explanation:"The recommended workflow is explore→plan→code→commit. First explore the codebase to understand the current state, then plan the approach (using plan mode for complex changes), implement the changes, and commit. This prevents premature coding before understanding."
+},
+{
+  id:43, module:3, scenario:"Code Generation with Claude Code",
+  text:"In CI/CD, what flags should you combine with <code>-p</code> for structured, automated output?",
+  options:[
+    "<code>-p</code> with <code>--output-format json</code> for machine-readable output",
+    "<code>-p</code> with <code>--verbose</code> for detailed logging",
+    "<code>-p</code> with <code>--dry-run</code> to preview without executing",
+    "<code>-p</code> with <code>--silent</code> to suppress all output"
+  ],
+  correct:0,
+  explanation:"-p enables non-interactive mode and --output-format json produces structured JSON output that CI/CD pipelines can parse programmatically. This combination is the standard pattern for integrating Claude Code into automated workflows."
+},
+{
+  id:44, module:3, scenario:"Code Generation with Claude Code",
+  text:"You want to restrict tool access in CI/CD to only safe, read-only operations. Which flags control this?",
+  options:[
+    "<code>--allowedTools</code> to whitelist specific tools and <code>--disallowedTools</code> to blacklist dangerous ones",
+    "<code>--readonly</code> flag to prevent all writes",
+    "<code>--safe-mode</code> to enable built-in safety restrictions",
+    "<code>--tools</code> flag with a comma-separated list"
+  ],
+  correct:0,
+  explanation:"--allowedTools and --disallowedTools provide granular tool access control. In CI/CD, you might use --allowedTools to only permit Read, Grep, and Glob while blocking Write, Edit, and Bash for safety."
+},
+{
+  id:45, module:3, scenario:"Code Generation with Claude Code",
+  text:"Path-specific rules in <code>.claude/rules/</code> use glob patterns in frontmatter. What does this rule file do?<br><br><code>---<br>globs: \"**/*.test.ts\"<br>---<br>Always use describe/it blocks. Mock external APIs.</code>",
+  options:[
+    "Applies the testing instructions only when Claude Code is working on files matching <code>**/*.test.ts</code>",
+    "Applies to all TypeScript files in the project",
+    "Applies only when the user explicitly requests test generation",
+    "Applies to any file in a directory named 'test'"
+  ],
+  correct:0,
+  explanation:"The glob pattern **/*.test.ts in the frontmatter means the rule only activates when Claude Code is editing or reading files that match that pattern — specifically test files ending in .test.ts. Other files are unaffected."
+},
+{
+  id:46, module:3, scenario:"Code Generation with Claude Code",
+  text:"What is the difference between custom <strong>commands</strong> (<code>.claude/commands/</code>) and <strong>skills</strong> (<code>.claude/skills/</code>)?",
+  options:[
+    "Commands are prompt templates invoked via slash commands; skills are isolated sub-agents with their own context, tools, and SKILL.md configuration",
+    "Commands run in the current session; skills always require network access",
+    "Commands are for simple tasks; skills are just multi-step commands",
+    "Commands are project-level; skills are user-level only"
+  ],
+  correct:0,
+  explanation:"Commands are markdown prompt templates invoked via /command-name — they run in the current session context. Skills are full sub-agents with SKILL.md configuration, optional context:fork isolation, and allowed-tools restrictions. Skills provide more powerful encapsulation."
+},
+{
+  id:47, module:3, scenario:"Code Generation with Claude Code",
+  text:"When using <code>context: fork</code> in a skill, what happens to the skill's tool calls and intermediate state?",
+  options:[
+    "They exist only in the forked context and are discarded when the skill completes; only the final result returns to the main session",
+    "They are merged back into the main session's context",
+    "They are saved to a log file for later review",
+    "They persist in the main session but are hidden from the user"
+  ],
+  correct:0,
+  explanation:"With context:fork, the skill runs in an isolated context. All its intermediate tool calls, file reads, and reasoning happen in the fork. When the skill completes, only the final output is returned to the main session — keeping the main context clean."
+},
+{
+  id:48, module:3, scenario:"Code Generation with Claude Code",
+  text:"You want to create a reusable command that generates API endpoint boilerplate with a variable for the endpoint name. How do you parameterize it?",
+  options:[
+    "Use <code>$ARGUMENTS</code> placeholder in the command markdown file — the user passes the value after the slash command",
+    "Define parameters in a JSON schema file alongside the command",
+    "Use <code>{{param}}</code> template syntax in the command file",
+    "Parameters are not supported; each endpoint needs its own command file"
+  ],
+  correct:0,
+  explanation:"Custom commands use $ARGUMENTS as a placeholder in the markdown template. When the user types /generate-endpoint users, 'users' replaces $ARGUMENTS in the prompt. This is the built-in parameterization mechanism."
+},
+
+// ──────────────────────────────────────────────
+//  MODULE 4 — PROMPT ENGINEERING (16 Qs)
+// ──────────────────────────────────────────────
+{
+  id:49, module:4, scenario:"Content Moderation System",
+  text:"You're building a content moderation classifier with three categories: REMOVE, REVIEW, ALLOW. Which prompting approach produces the most consistent results?",
+  options:[
+    "Explicit criteria with testable definitions: REMOVE = contains direct threats OR illegal content; REVIEW = ambiguous but flagged by 2+ heuristics; ALLOW = everything else",
+    "A simple instruction: 'Classify content as appropriate or inappropriate'",
+    "Let the model use its own judgment with the instruction: 'Be careful with sensitive content'",
+    "Provide a long list of banned words and phrases to match against"
+  ],
+  correct:0,
+  explanation:"Explicit, testable criteria produce consistent results because the model has clear decision boundaries. Vague instructions ('be careful') lead to inconsistent classification. Word lists are brittle and easily circumvented."
+},
+{
+  id:50, module:4, scenario:"Content Moderation System",
+  text:"You've defined explicit criteria for your classifier but edge cases still produce inconsistent results. What should you add next?",
+  options:[
+    "3-5 few-shot examples in <code>&lt;example&gt;</code> tags showing correct classification of edge cases",
+    "More detailed criteria with longer descriptions",
+    "A confidence threshold that rejects low-confidence classifications",
+    "Multiple classification passes and majority voting"
+  ],
+  correct:0,
+  explanation:"Few-shot examples in <example> tags are the second layer of precision prompting. They show the model how to apply the criteria to tricky cases. 3-5 examples is the recommended range — enough to establish patterns without overwhelming the context."
+},
+{
+  id:51, module:4, scenario:"Content Moderation System",
+  text:"Your few-shot examples work well for the specific cases shown, but the model struggles with novel content types. What's the third layer to add?",
+  options:[
+    "Generalization principles that explain the reasoning behind the examples, helping the model extrapolate to new cases",
+    "More examples covering every possible content type",
+    "A fallback rule that defaults to REVIEW for anything uncertain",
+    "Chain-of-thought prompting for every classification"
+  ],
+  correct:0,
+  explanation:"Generalization principles are the third layer: they explain WHY the examples are classified the way they are, enabling the model to apply the same reasoning to novel cases. This is more scalable than trying to cover every possible case with examples."
+},
+{
+  id:52, module:4, scenario:"Data Processing Pipeline",
+  text:"You need Claude to extract structured data from unstructured text and return it as JSON. What's the most reliable approach?",
+  options:[
+    "Use tool schemas (function definitions) to enforce structured output — the model fills in the schema fields",
+    "Ask for JSON in the prompt and hope the model formats it correctly",
+    "Use regex to extract data from the model's text response",
+    "Ask the model to write Python code that extracts the data"
+  ],
+  correct:0,
+  explanation:"Tool schemas provide guaranteed structured output — the model must fill in the defined fields with the correct types. This is more reliable than asking for JSON in text (which can have formatting issues) or regex extraction (which is brittle)."
+},
+{
+  id:53, module:4, scenario:"Data Processing Pipeline",
+  text:"You need to process 50,000 documents through Claude for classification. What API feature provides the most cost-effective approach?",
+  options:[
+    "The Batch API, which offers 50% cost savings and can handle up to 100K requests per batch",
+    "Sending all documents in a single API call with a large context window",
+    "Using the streaming API for real-time processing",
+    "Splitting documents across multiple Claude instances manually"
+  ],
+  correct:0,
+  explanation:"The Batch API is designed for high-volume processing: up to 100K requests per batch with 50% cost savings compared to individual API calls. Results are returned within 24 hours. This is the standard approach for bulk processing."
+},
+{
+  id:54, module:4, scenario:"Data Processing Pipeline",
+  text:"Your document processing pipeline needs to first extract entities, then classify them, then generate a summary. What's the best orchestration pattern?",
+  options:[
+    "Multipass processing: each step is a separate API call with the output of the previous step as input",
+    "A single prompt that combines all three tasks",
+    "Three separate prompts run in parallel, then merge results",
+    "One long chain-of-thought prompt that handles everything sequentially"
+  ],
+  correct:0,
+  explanation:"Multipass processing breaks complex tasks into discrete steps, each as a separate API call. The output of extraction feeds into classification, which feeds into summarization. This gives better results than a single monolithic prompt because each step gets full attention."
+},
+{
+  id:55, module:4, scenario:"Content Moderation System",
+  text:"Your classifier needs a validation step. After the initial classification, what pattern ensures correctness?",
+  options:[
+    "A validation and retry loop: check the output against criteria, and if it fails validation, send it back with the error for correction",
+    "Always trust the first classification — retrying introduces inconsistency",
+    "Run two independent classifications and take the one with higher confidence",
+    "Add a human review step for every classification"
+  ],
+  correct:0,
+  explanation:"Validation and retry loops are a core pattern: check the model's output against your criteria programmatically, and if it fails, send the output back with specific error feedback. The model can then self-correct. This typically resolves issues in 1-2 retries."
+},
+{
+  id:56, module:4, scenario:"Data Processing Pipeline",
+  text:"When providing few-shot examples in your prompt, what is the recommended format?",
+  options:[
+    "Wrap examples in XML-style <code>&lt;example&gt;</code> tags with clear input/output separation",
+    "Use markdown headers to separate examples",
+    "List examples as plain text paragraphs",
+    "Use JSON arrays to structure examples"
+  ],
+  correct:0,
+  explanation:"XML-style <example> tags provide clear boundaries between examples and between input/output within each example. Claude is specifically trained to work well with this format, making it the recommended approach."
+},
+{
+  id:57, module:4, scenario:"Data Processing Pipeline",
+  text:"You want Claude to generate code that conforms to specific patterns. What's the most effective prompting technique?",
+  options:[
+    "Provide explicit output format specifications and examples of the desired code pattern",
+    "Describe the desired output in natural language and trust the model's judgment",
+    "Use system prompts with the instruction 'write clean code'",
+    "Provide the full API documentation and let the model figure out the pattern"
+  ],
+  correct:0,
+  explanation:"Explicit output format specifications with concrete examples give the model a clear target. Show the exact pattern you want (variable naming, structure, error handling approach), and the model will follow it. Vague instructions like 'write clean code' are subjective and produce inconsistent results."
+},
+{
+  id:58, module:4, scenario:"Content Moderation System",
+  text:"You're designing a prompt for a complex task. What is the key principle behind 'testable definitions'?",
+  options:[
+    "Every criterion should be objective enough that two people reading it would make the same decision",
+    "Definitions should include test cases to validate them",
+    "Each criterion should be tested with a unit test",
+    "Definitions should be written as boolean expressions"
+  ],
+  correct:0,
+  explanation:"Testable definitions are criteria that produce consistent outcomes regardless of who applies them. 'Contains offensive language' is subjective; 'contains words from the prohibited list' is testable. The goal is eliminating ambiguity in the decision boundary."
+},
+{
+  id:59, module:4, scenario:"Data Processing Pipeline",
+  text:"Your Batch API job processes 10,000 items. How should you handle items that fail?",
+  options:[
+    "Collect failed items, analyze failure patterns, fix the prompt or input for those patterns, and resubmit a targeted batch",
+    "Resubmit the entire batch and hope for better results",
+    "Mark all failed items as errors and skip them",
+    "Process failed items one-by-one through the standard API"
+  ],
+  correct:0,
+  explanation:"Batch processing best practice: collect failures, analyze patterns (are certain input types failing? Is the prompt unclear for certain cases?), fix the root cause, and resubmit only the failed items. This is more efficient than reprocessing everything."
+},
+{
+  id:60, module:4, scenario:"Content Moderation System",
+  text:"How many few-shot examples are recommended for establishing a consistent classification pattern?",
+  options:[
+    "3-5 examples covering common cases and edge cases",
+    "1 example is sufficient if it's well-crafted",
+    "10+ examples to cover every possible variation",
+    "No examples needed if the criteria are explicit enough"
+  ],
+  correct:0,
+  explanation:"3-5 examples is the sweet spot: enough to show the pattern and cover key edge cases, but not so many that they consume excessive context. Include at least one example per category and one edge case example."
+},
+{
+  id:61, module:4, scenario:"Data Processing Pipeline",
+  text:"When using <code>tool_choice: 'none'</code>, what happens?",
+  options:[
+    "The model is prevented from using any tools and must respond with text only",
+    "The model uses the default tool selection behavior",
+    "All tools are disabled permanently for the session",
+    "The model selects the first available tool automatically"
+  ],
+  correct:0,
+  explanation:"tool_choice: 'none' prevents the model from calling any tools for that specific API request. It must respond with text only. This is useful for final synthesis steps where you want the model to consolidate findings without making additional tool calls."
+},
+{
+  id:62, module:4, scenario:"Data Processing Pipeline",
+  text:"What is the difference between <code>tool_choice: 'auto'</code> and <code>tool_choice: 'any'</code>?",
+  options:[
+    "'auto' lets the model decide whether to use tools or respond with text; 'any' forces the model to call at least one tool",
+    "'auto' selects the best tool automatically; 'any' uses all available tools",
+    "'auto' is for single tools; 'any' is for multiple tools",
+    "'auto' requires manual confirmation; 'any' executes immediately"
+  ],
+  correct:0,
+  explanation:"'auto' gives the model full discretion — it may call tools or respond with text. 'any' forces the model to make at least one tool call (it cannot respond with text only). 'tool' with a name forces a specific tool. 'none' prevents all tool use."
+},
+{
+  id:63, module:4, scenario:"Content Moderation System",
+  text:"You need to classify content but also provide a confidence score and reasoning. What prompt structure achieves this?",
+  options:[
+    "Define a tool schema with fields for classification, confidence (0-1), and reasoning — the model fills all fields in a single structured call",
+    "Ask for classification first, then ask for confidence in a follow-up prompt",
+    "Add 'include confidence' to the end of your classification prompt",
+    "Use chain-of-thought and parse the confidence from the text response"
+  ],
+  correct:0,
+  explanation:"A tool schema with defined fields (classification, confidence, reasoning) guarantees all three outputs in a structured format. The model fills in each field, and you get typed data you can process programmatically. This is more reliable than parsing text responses."
+},
+{
+  id:64, module:4, scenario:"Data Processing Pipeline",
+  text:"Your pipeline's extraction step is producing inconsistent results across similar documents. What is the most likely cause and fix?",
+  options:[
+    "The extraction criteria are vague — add explicit field definitions with examples of what each field should contain",
+    "The model is non-deterministic; there's no fix",
+    "The documents are too different to extract consistently",
+    "Reduce temperature to 0 to eliminate all variation"
+  ],
+  correct:0,
+  explanation:"Inconsistent extraction typically means the criteria are vague. Adding explicit field definitions ('Company name = the legal entity name as it appears in the header, not abbreviations') with examples fixes this. Temperature reduction helps but doesn't address root-cause ambiguity."
+},
+
+// ──────────────────────────────────────────────
+//  MODULE 5 — CONTEXT MANAGEMENT & RELIABILITY (16 Qs)
+// ──────────────────────────────────────────────
+{
+  id:65, module:5, scenario:"Developer Productivity with Claude",
+  text:"After a long exploration of a rendering subsystem, the agent starts responding with generic patterns instead of specific classes it had discovered. What is the most effective approach?",
+  options:[
+    "Summarize the key rendering findings, then spawn a subagent for physics exploration with that summary in its initial context",
+    "Clear the context completely and restart from scratch",
+    "Spawn a subagent to explore physics independently and manually synthesize later",
+    "Continue in the current context with more targeted prompts"
+  ],
+  correct:0,
+  explanation:"When context is saturated, the best approach is to preserve key findings in a summary, then spawn a fresh subagent that starts with that summary. This avoids losing prior work while getting a clean context for new exploration."
+},
+{
+  id:66, module:5, scenario:"Developer Productivity with Claude",
+  text:"An engineer wants to understand a caching layer before adding a new invalidation trigger. The caching logic spans many files. What is the most effective next step?",
+  options:[
+    "Analyze imports and class hierarchies to identify the base cache class, read it first, then trace specific invalidation implementations",
+    "Use Grep to search for 'invalidate' and 'expire' patterns and read only those line ranges",
+    "Sequentially load all files with the Read tool",
+    "Use Glob to find cache-related filenames and read the largest files first"
+  ],
+  correct:0,
+  explanation:"Start with structure (base cache class), then trace specifics (invalidation). This is the incremental exploration pattern: understand the architecture before diving into details. Loading everything or searching patterns without understanding structure leads to incomplete understanding."
+},
+{
+  id:67, module:5, scenario:"Developer Productivity with Claude",
+  text:"An engineer who just joined the team asks the agent to help them understand the auth architecture across a large multi-service codebase. What exploration strategy is most effective under context limits?",
+  options:[
+    "Use Grep to find authentication entry points, read those files, and follow imports and function calls incrementally",
+    "Read every file containing auth-related keywords",
+    "Launch parallel subagents to explore different services simultaneously",
+    "Read CLAUDE.md and README files first, then ask the engineer to identify important files"
+  ],
+  correct:0,
+  explanation:"Incremental exploration is the key: start with Grep to find entry points, read those files, then follow imports. This builds understanding layer by layer without exhausting context. Reading everything is impractical; parallel subagents add complexity prematurely."
+},
+{
+  id:68, module:5, scenario:"Legal Document Analysis System",
+  text:"Your agent is analyzing a 200-page legal document. After processing the first 50 pages, context is getting full. What should you do?",
+  options:[
+    "Use <code>/compact</code> to compress the conversation context, preserving key findings in a condensed format",
+    "Start a completely new session and re-read the document from page 1",
+    "Continue and accept that older findings will be forgotten",
+    "Save all findings to a file and process the remaining pages in a batch"
+  ],
+  correct:0,
+  explanation:"/compact compresses the conversation context, condensing earlier messages while preserving critical findings. This frees up context budget for continued analysis without losing prior work. It's the built-in tool for context management."
+},
+{
+  id:69, module:5, scenario:"Legal Document Analysis System",
+  text:"Your agent is processing case facts from multiple documents. How should you structure the context to prevent confusion between cases?",
+  options:[
+    "Use case facts blocks — wrap each case's information in clearly labeled, structured sections with case identifiers",
+    "Process one case at a time in separate sessions",
+    "Trust the model to keep track of which facts belong to which case",
+    "Number all facts sequentially regardless of case"
+  ],
+  correct:0,
+  explanation:"Case facts blocks provide clear boundaries between different cases' information, preventing cross-contamination. Labeled sections with case identifiers (e.g., [Case: Smith v. Jones]) help the model maintain accurate associations."
+},
+{
+  id:70, module:5, scenario:"Developer Productivity with Claude",
+  text:"During a long coding session, Claude Code crashes. How do you recover without losing progress?",
+  options:[
+    "Use <code>--resume</code> to pick up the last session, or <code>--continue</code> to start a new session that loads the prior context",
+    "Start a new session and manually re-explain everything",
+    "Check git for committed changes and start from the last commit",
+    "Look for auto-saved drafts in <code>.claude/drafts/</code>"
+  ],
+  correct:0,
+  explanation:"--resume picks up exactly where the session left off (same session ID, same context). --continue starts a new session but loads the prior session's context as initial state. Both are crash recovery mechanisms built into Claude Code."
+},
+{
+  id:71, module:5, scenario:"Legal Document Analysis System",
+  text:"Your agent needs to trim tool outputs to save context budget. When is it safe to trim, and what should you preserve?",
+  options:[
+    "Trim verbose outputs (e.g., full file reads when only a few lines matter) but always preserve key findings, function signatures, and error messages",
+    "Never trim tool outputs — the full context is always needed",
+    "Trim everything older than the last 5 tool calls",
+    "Only trim tool outputs from subagent calls"
+  ],
+  correct:0,
+  explanation:"Smart trimming preserves what matters: key findings, function signatures, error details. Full file contents when only a few lines are relevant, verbose log outputs, and redundant search results can be safely trimmed. The goal is to maximize information density."
+},
+{
+  id:72, module:5, scenario:"Customer Support Resolution Agent",
+  text:"Your agent encounters an ambiguous customer request: 'I want to change my order.' This could mean cancel, modify, or upgrade. What is the correct escalation pattern?",
+  options:[
+    "Ask clarifying questions: present the possible interpretations and ask the customer which one they mean",
+    "Default to the most common interpretation (cancel) and proceed",
+    "Escalate to a human agent immediately",
+    "Process all three interpretations simultaneously and let the customer choose"
+  ],
+  correct:0,
+  explanation:"Escalation for ambiguity means asking for clarification, not immediately handing off to a human. Present specific options ('Did you mean: A) Cancel the order, B) Modify items, or C) Upgrade your plan?') to resolve the ambiguity efficiently."
+},
+{
+  id:73, module:5, scenario:"Customer Support Resolution Agent",
+  text:"Your tool returns a timeout error from the backend. How should the agent handle this using the <strong>retry-local pattern</strong>?",
+  options:[
+    "Retry the tool call locally (up to a configured limit) before escalating the timeout error to the user or coordinator",
+    "Immediately report the timeout to the user",
+    "Switch to an alternative tool that might work",
+    "Ignore the error and continue with the next step"
+  ],
+  correct:0,
+  explanation:"The retry-local pattern means: retry the failed operation locally (e.g., 2-3 times with backoff) before escalating. Timeouts are often transient, and local retries can resolve them without user disruption. But set a limit to avoid infinite retry loops."
+},
+{
+  id:74, module:5, scenario:"Customer Support Resolution Agent",
+  text:"Your tool returns a 'no data found' error versus a timeout error. How should the agent distinguish between these?",
+  options:[
+    "'No data found' is a valid response (the data doesn't exist) — process accordingly. A timeout is an infrastructure failure — retry with the retry-local pattern",
+    "Both errors should be retried the same way",
+    "Both errors should be escalated to the user immediately",
+    "'No data found' should be retried because the data might appear later"
+  ],
+  correct:0,
+  explanation:"These are fundamentally different: 'no data found' means the query was successful but returned empty results — it's a valid answer. A timeout means the infrastructure failed — the query didn't complete and should be retried. Treating them the same leads to either unnecessary retries or missed transient failures."
+},
+{
+  id:75, module:5, scenario:"Legal Document Analysis System",
+  text:"Your agent uses a scratchpad file to persist findings during a long analysis session. What is the primary benefit of this approach?",
+  options:[
+    "Findings persist across <code>/compact</code> operations and session recoveries, surviving context compression",
+    "The scratchpad is faster to read than conversation context",
+    "The scratchpad is automatically shared with other users",
+    "The scratchpad replaces the need for context management"
+  ],
+  correct:0,
+  explanation:"Scratchpad files persist on disk, surviving /compact (which compresses conversation context) and session crashes (--resume/--continue). Key findings written to a scratchpad can always be re-read, making them a durable backup for critical information."
+},
+{
+  id:76, module:5, scenario:"Legal Document Analysis System",
+  text:"When reviewing extracted information, what is <strong>stratified sampling</strong> in the context of human review?",
+  options:[
+    "Sampling items from different categories/strata for review to ensure coverage across all types, not just random selection",
+    "Reviewing only the most complex items",
+    "Reviewing a fixed percentage of all items",
+    "Reviewing items in the order they were processed"
+  ],
+  correct:0,
+  explanation:"Stratified sampling ensures review coverage across different categories: high-confidence vs. low-confidence, different document types, different extraction patterns. This catches systematic errors that random sampling might miss."
+},
+{
+  id:77, module:5, scenario:"Legal Document Analysis System",
+  text:"Your agent extracts a claim from a document: 'The contract was signed on March 15, 2024.' How should it track <strong>information provenance</strong>?",
+  options:[
+    "Claim-source mapping: link the specific claim to the exact document, page, and paragraph where it was found",
+    "Store the claim with a timestamp of when the agent extracted it",
+    "Mark the claim as 'verified' since it came from a document",
+    "Store the claim in a database with a unique ID"
+  ],
+  correct:0,
+  explanation:"Claim-source mapping connects each extracted claim to its exact source location (document, page, paragraph). This enables verification, supports audit trails, and allows humans to quickly check whether the extraction was accurate."
+},
+{
+  id:78, module:5, scenario:"Legal Document Analysis System",
+  text:"Your agent finds conflicting information in two documents about the same event. How should it handle this using information provenance?",
+  options:[
+    "Report both claims with their sources and mark the finding as 'contested' — don't silently choose one over the other",
+    "Use the most recent document's version as the truth",
+    "Choose the claim from the longer, more detailed document",
+    "Average the two conflicting values"
+  ],
+  correct:0,
+  explanation:"When sources conflict, the agent should report both claims with full provenance and mark them as 'contested'. This is the confirmed vs. contested distinction in information provenance. Silently choosing one source over another hides potential errors."
+},
+{
+  id:79, module:5, scenario:"Legal Document Analysis System",
+  text:"For per-field evaluation in human review, what does this mean?",
+  options:[
+    "Evaluate each extracted field independently (e.g., name accuracy, date accuracy, amount accuracy) rather than reviewing the entire extraction as pass/fail",
+    "Review fields in the order they appear in the document",
+    "Evaluate only the fields that the model flagged as uncertain",
+    "Review each field against multiple source documents"
+  ],
+  correct:0,
+  explanation:"Per-field evaluation assesses each extracted field independently: names might be 98% accurate while dates are only 85% accurate. This granular view identifies which specific extraction tasks need improvement, rather than a single pass/fail score."
+},
+{
+  id:80, module:5, scenario:"Developer Productivity with Claude",
+  text:"When reading a source file that hasn't been modified in 2 years, what strategy helps understand its purpose without reading all of it?",
+  options:[
+    "Use Grep to find test files or documentation that reference this module",
+    "Read the entire file to understand its full context",
+    "Skip it; old code is usually not important",
+    "Use Bash to count lines and estimate complexity"
+  ],
+  correct:0,
+  explanation:"Tests and documentation that reference a module often explain its purpose and usage better than the source code itself. This is especially true for old, stable code — tests show how it's used, and docs explain why it exists."
+},
+
+// ──────────────────────────────────────────────
+//  BONUS — HOOKS SYSTEM (5 Qs)
+// ──────────────────────────────────────────────
+{
+  id:81, module:5, scenario:"Developer Productivity with Claude",
+  text:"You want to run a linter automatically after every file write. Which hook event should you use?",
+  options:[
+    "<code>PostToolUse</code> with a matcher for the Write tool",
+    "<code>PreToolUse</code> with a matcher for the Write tool",
+    "<code>Stop</code> hook at the end of the conversation",
+    "<code>UserPromptSubmit</code> to validate before the model responds"
+  ],
+  correct:0,
+  explanation:"PostToolUse fires after a tool completes. With a matcher for the Write tool, you can run a linter on the written file immediately after the write operation. PreToolUse would fire before the write, which is too early for linting."
+},
+{
+  id:82, module:5, scenario:"Developer Productivity with Claude",
+  text:"Which hook events are available in Claude Code?",
+  options:[
+    "<code>PreToolUse</code>, <code>PostToolUse</code>, <code>UserPromptSubmit</code>, <code>Stop</code>, and <code>SessionStart</code>",
+    "<code>BeforeRun</code>, <code>AfterRun</code>, <code>OnError</code>",
+    "<code>PrePrompt</code>, <code>PostPrompt</code>, <code>OnToolCall</code>",
+    "<code>Init</code>, <code>Execute</code>, <code>Complete</code>, <code>Error</code>"
+  ],
+  correct:0,
+  explanation:"Claude Code's five hook events are: PreToolUse (before a tool runs), PostToolUse (after a tool runs), UserPromptSubmit (when user sends a message), Stop (when the model finishes responding), and SessionStart (when a session begins). They're configured in settings.json."
+},
+{
+  id:83, module:5, scenario:"Developer Productivity with Claude",
+  text:"Where are hooks configured in Claude Code?",
+  options:[
+    "In <code>settings.json</code> (user or project level) under the hooks key, with matchers to specify which tools or events trigger them",
+    "In <code>.claude/hooks/</code> directory as shell scripts",
+    "In CLAUDE.md under a <code># Hooks</code> section",
+    "In <code>.mcp.json</code> alongside MCP server configurations"
+  ],
+  correct:0,
+  explanation:"Hooks are configured in settings.json (either ~/.claude/settings.json for user-level or .claude/settings.json for project-level). Each hook specifies the event type, an optional matcher (e.g., tool name), and the command to run."
+},
+{
+  id:84, module:5, scenario:"Developer Productivity with Claude",
+  text:"A <code>PreToolUse</code> hook returns a non-zero exit code. What happens?",
+  options:[
+    "The tool call is blocked — the tool does not execute, and the model receives feedback about the block",
+    "The tool executes anyway but with a warning",
+    "The entire Claude Code session terminates",
+    "The hook error is silently ignored"
+  ],
+  correct:0,
+  explanation:"A non-zero exit code from a PreToolUse hook blocks the tool from executing. The model receives feedback about the block and can adjust its approach. This is how hooks enforce policies — they act as programmatic gates."
+},
+{
+  id:85, module:5, scenario:"Developer Productivity with Claude",
+  text:"You want to prevent Claude Code from writing to any file in the <code>/config/production/</code> directory. Which hook setup achieves this?",
+  options:[
+    "A <code>PreToolUse</code> hook matching the Write and Edit tools that checks if the file path starts with <code>/config/production/</code> and returns exit code 2 if so",
+    "A rule in <code>.claude/rules/</code> with a glob pattern that says 'do not write to production config'",
+    "A <code>PostToolUse</code> hook that reverts writes to production config files",
+    "An entry in CLAUDE.md instructing the model to avoid production files"
+  ],
+  correct:0,
+  explanation:"A PreToolUse hook provides hard enforcement: it inspects the tool call parameters before execution and blocks writes to protected paths by returning exit code 2. Exit code 2 specifically tells Claude Code to block the operation and send the stderr message to Claude. Rules and CLAUDE.md are suggestions; hooks are gates."
+},
+
+// ──────────────────────────────────────────────
+//  ADVANCED QUESTIONS — Deeper exam coverage (15 Qs)
+// ──────────────────────────────────────────────
+{
+  id:86, module:1, scenario:"Multi-Agent Research System",
+  text:"Your agentic loop receives a response with <code>stop_reason: 'pause_turn'</code>. What does this indicate and what should your code do?",
+  options:[
+    "The server-side sampling loop reached its iteration limit (default 10); send the assistant response back to continue processing",
+    "The model has paused to wait for user input before continuing",
+    "The model wants to use a tool but is waiting for permission",
+    "The API rate limit has been hit and you should wait before retrying"
+  ],
+  correct:0,
+  explanation:"'pause_turn' means the server-side agentic loop hit its iteration cap (default 10 tool calls per turn). Your orchestration code should send the assistant's response back to continue where it left off. This is distinct from 'tool_use' which indicates a specific tool call request."
+},
+{
+  id:87, module:2, scenario:"Developer Productivity with Claude",
+  text:"You're using <code>tool_choice</code> with extended thinking enabled. Which <code>tool_choice</code> values are compatible with <strong>manual</strong> extended thinking?",
+  options:[
+    "Only <code>'auto'</code> and <code>'none'</code> — forced tool use (<code>'any'</code> and <code>'tool'</code>) is NOT compatible with manual extended thinking",
+    "All tool_choice values work with extended thinking",
+    "Only <code>'auto'</code> is compatible; all other values are blocked",
+    "Extended thinking disables tool_choice entirely"
+  ],
+  correct:0,
+  explanation:"Manual extended thinking only supports tool_choice 'auto' or 'none'. Forced tool use ('any' or 'tool' with a name) prefills the assistant message, which conflicts with extended thinking. However, adaptive thinking (the newer alternative) supports ALL tool_choice values."
+},
+{
+  id:88, module:2, scenario:"Customer Support Resolution Agent",
+  text:"Your MCP tool returns an error. What is the correct way to report the error back to Claude in the MCP protocol?",
+  options:[
+    "Return a <code>CallToolResult</code> with <code>isError: true</code> and a descriptive error message in the content",
+    "Throw an exception from the tool handler function",
+    "Return an HTTP 500 status code",
+    "Return a <code>CallToolResult</code> with empty content to indicate failure"
+  ],
+  correct:0,
+  explanation:"MCP tools should return a CallToolResult with isError: true and a descriptive error message. Thrown exceptions become protocol-level errors (not tool errors), and empty content would be interpreted as a successful empty result. The isError flag is what distinguishes a tool failure from a valid response."
+},
+{
+  id:89, module:3, scenario:"Code Generation with Claude Code",
+  text:"What is <code>CLAUDE.local.md</code> used for, and how does it differ from <code>CLAUDE.md</code>?",
+  options:[
+    "CLAUDE.local.md provides personal configuration tweaks and is automatically gitignored, unlike CLAUDE.md which is committed and shared with the team",
+    "CLAUDE.local.md is the main configuration file and CLAUDE.md is deprecated",
+    "CLAUDE.local.md only applies during local development; CLAUDE.md applies in CI/CD",
+    "CLAUDE.local.md overrides all other configuration including user-level settings"
+  ],
+  correct:0,
+  explanation:"CLAUDE.local.md is for personal, per-project tweaks that shouldn't be shared. It's automatically gitignored, so each developer can customize behavior without affecting the team. CLAUDE.md is committed and shared, serving as the team's standard configuration."
+},
+{
+  id:90, module:3, scenario:"Code Generation with Claude Code",
+  text:"In plan mode, which tools are <strong>allowed</strong> and which are <strong>blocked</strong>?",
+  options:[
+    "Allowed: Read, LS, Glob, Grep, WebSearch, WebFetch. Blocked: Edit, MultiEdit, Write, Bash execution",
+    "Allowed: Read, Write, Edit. Blocked: Bash, Grep, Glob",
+    "All tools are allowed but require explicit user approval",
+    "Only Read is allowed; all other tools are blocked"
+  ],
+  correct:0,
+  explanation:"Plan mode allows read-only exploration tools (Read, LS, Glob, Grep, WebSearch, WebFetch, TodoRead, TodoWrite) but blocks all mutation tools (Edit, MultiEdit, Write, Bash). This lets you explore and plan without accidentally modifying files."
+},
+{
+  id:91, module:3, scenario:"Code Generation with Claude Code",
+  text:"How do you activate plan mode in Claude Code? Select the most complete answer.",
+  options:[
+    "Press <code>Shift+Tab</code> twice to toggle, or type <code>/plan</code>, or use <code>--permission-mode plan</code> CLI flag",
+    "Only via the <code>/plan</code> slash command",
+    "Only via the <code>--plan</code> CLI flag",
+    "Press <code>Ctrl+P</code> to toggle plan mode"
+  ],
+  correct:0,
+  explanation:"Plan mode can be activated three ways: Shift+Tab twice (interactive toggle), /plan at the prompt (command), or --permission-mode plan (CLI flag for headless/default). On Windows, Alt+M may be needed if Shift+Tab skips plan mode."
+},
+{
+  id:92, module:4, scenario:"Data Processing Pipeline",
+  text:"The Batch API offers a cost discount. What is the <strong>exact</strong> discount percentage, and can it stack with prompt caching?",
+  options:[
+    "50% discount on all tokens (input, output, cache reads, cache writes, thinking). Yes, it stacks with prompt caching for up to 95% savings",
+    "40% discount on input tokens only. No stacking with other discounts",
+    "50% discount but only on output tokens. Cannot stack with caching",
+    "25% discount that doubles if you submit more than 10K requests per batch"
+  ],
+  correct:0,
+  explanation:"The Batch API provides exactly 50% cost reduction on ALL token types (input, output, cache reads, cache writes, thinking tokens). It stacks with prompt caching: 50% batch discount + 90% cache read discount = up to 95% savings. Results are returned within 24 hours."
+},
+{
+  id:93, module:4, scenario:"Content Moderation System",
+  text:"You're using <code>tool_choice: {type: 'tool', name: 'classify_content'}</code>. What behavior does this produce?",
+  options:[
+    "Forces Claude to call <strong>exactly</strong> the <code>classify_content</code> tool — it cannot choose a different tool or respond with text only",
+    "Suggests that Claude should prefer classify_content but allows other tools",
+    "Calls classify_content automatically without Claude's involvement",
+    "Forces Claude to use all tools in sequence, starting with classify_content"
+  ],
+  correct:0,
+  explanation:"tool_choice with type 'tool' and a specific name forces Claude to call exactly that tool. The model cannot choose a different tool or respond with text only. This is the strongest control level — useful when you need guaranteed structured output from a specific tool."
+},
+{
+  id:94, module:5, scenario:"Developer Productivity with Claude",
+  text:"When should you run <code>/compact</code> during a long coding session?",
+  options:[
+    "At approximately 60% context capacity or after completing a significant milestone — proactively, not reactively",
+    "Only when Claude Code warns you about context limits",
+    "After every 5 tool calls regardless of context usage",
+    "Never during a session; only between sessions"
+  ],
+  correct:0,
+  explanation:"Best practice is to run /compact proactively at ~60% capacity or after milestones (e.g., every 30-45 minutes of active work). Waiting until 95% capacity means auto-compression may produce lower-quality summaries. You can also pass a custom prompt to /compact for targeted preservation."
+},
+{
+  id:95, module:5, scenario:"Legal Document Analysis System",
+  text:"Your agent needs to maintain critical findings across a <code>/compact</code> operation. What is the most reliable approach?",
+  options:[
+    "Write key findings to an external scratchpad file before running /compact — the file persists on disk and can be re-read after compression",
+    "Trust that /compact will preserve all important information automatically",
+    "Copy findings to the system prompt before compacting",
+    "Use the --preserve flag with /compact to mark important messages"
+  ],
+  correct:0,
+  explanation:"Scratchpad files persist on disk, surviving /compact (which compresses conversation context), session crashes, and --resume/--continue recovery. Writing critical findings to a file before /compact ensures they can always be re-read. There is no --preserve flag for /compact."
+},
+{
+  id:96, module:5, scenario:"Developer Productivity with Claude",
+  text:"A <code>PreToolUse</code> hook returns <strong>exit code 2</strong>. What specific behavior does this trigger?",
+  options:[
+    "The tool call is <strong>blocked</strong>, and the hook's stderr output is sent to Claude as feedback explaining why the operation was blocked",
+    "The tool call is retried after a 2-second delay",
+    "The tool call proceeds but a warning is logged",
+    "The entire Claude Code session terminates with an error"
+  ],
+  correct:0,
+  explanation:"Exit code 2 is special in Claude Code hooks: it blocks the tool call AND sends the stderr message directly to Claude as feedback. This lets the model understand why its action was blocked and adjust its approach. Exit code 0 = success, exit code 1 = general error, exit code 2 = block with feedback."
+},
+{
+  id:97, module:1, scenario:"Customer Support Resolution Agent",
+  text:"What is the critical difference between <strong>programmatic enforcement</strong> (hooks/gates) and <strong>prompt-based guidance</strong> for step ordering?",
+  options:[
+    "Programmatic enforcement is deterministic with 0% failure rate; prompt-based guidance is probabilistic and can be bypassed by model reasoning",
+    "Programmatic enforcement is slower but more reliable; prompt guidance is faster",
+    "There is no meaningful difference; both achieve the same results",
+    "Programmatic enforcement only works in CI/CD; prompt guidance works interactively"
+  ],
+  correct:0,
+  explanation:"This is a core exam concept: programmatic gates (hooks, tool restrictions) provide deterministic enforcement — the model literally cannot bypass them. Prompt-based instructions are 'soft' constraints that the model may override if its reasoning suggests a different approach. For compliance-critical workflows, always use programmatic enforcement."
+},
+{
+  id:98, module:2, scenario:"Developer Productivity with Claude",
+  text:"An MCP tool returns a valid but empty result (e.g., a database query returns 0 rows). How should this be represented?",
+  options:[
+    "Return <code>isError: false</code> with <code>resultCount: 0</code> — an empty result is a valid successful response, NOT an error",
+    "Return <code>isError: true</code> because no data was found",
+    "Return an empty response with no fields set",
+    "Throw a 'NoDataFound' exception"
+  ],
+  correct:0,
+  explanation:"A valid empty result (query succeeded, 0 rows) is fundamentally different from an error (query failed). Return isError: false with a result count of 0. Returning isError: true for empty results would cause unnecessary retries and confuse the model about whether the data exists."
+},
+{
+  id:99, module:3, scenario:"Code Generation with Claude Code",
+  text:"Your skill uses <code>paths: [\"**/*.service.ts\"]</code> in its SKILL.md frontmatter. What does this achieve?",
+  options:[
+    "The skill only appears and is available when the user is editing files that match the <code>**/*.service.ts</code> glob pattern, saving context tokens",
+    "The skill can only read files matching the pattern",
+    "The skill's output is restricted to files matching the pattern",
+    "The skill runs automatically whenever a matching file is saved"
+  ],
+  correct:0,
+  explanation:"The paths field in SKILL.md scopes when the skill is visible. It only loads into context when you're working on files matching the glob pattern, saving token budget. The skill won't appear in the available skills list when you're editing unrelated files."
+},
+{
+  id:100, module:1, scenario:"Multi-Agent Research System",
+  text:"When checking for loop termination, what is the <strong>anti-pattern</strong> to avoid?",
+  options:[
+    "Checking the response text for phrases like 'I'm done' or 'task complete' instead of using the <code>stop_reason</code> field",
+    "Using <code>stop_reason == 'end_turn'</code> as the termination condition",
+    "Setting a maximum iteration count as a safety net",
+    "Logging each iteration's stop_reason for debugging"
+  ],
+  correct:0,
+  explanation:"Checking natural language in the response (e.g., looking for 'I'm done') is a known anti-pattern. The stop_reason field is the authoritative, structured signal for loop control. Natural language is unreliable — the model might say 'I'm done with this step' while intending to continue with the next step."
+},
+
+// ──────────────────────────────────────────────
+//  RESEARCH-BASED QUESTIONS — Gaps & Gotchas (10 Qs)
+// ──────────────────────────────────────────────
+{
+  id:101, module:1, scenario:"Multi-Agent Research System",
+  text:"Your agentic loop receives <code>stop_reason: 'model_context_window_exceeded'</code>. What does this indicate?",
+  options:[
+    "The response filled the model's entire context window — treat it as truncated output, similar to <code>'max_tokens'</code>",
+    "The input prompt was too large to process — reduce the prompt size",
+    "The model ran out of memory on the server side",
+    "The conversation has too many messages — start a new session"
+  ],
+  correct:0,
+  explanation:"'model_context_window_exceeded' means the generated response filled the remaining context window. It should be treated as truncated output (like 'max_tokens'). This is distinct from an input-too-large error which would be an API error, not a stop_reason."
+},
+{
+  id:102, module:1, scenario:"Developer Productivity with Claude",
+  text:"Your code review assistant must evaluate pull requests for style, security, and documentation using the <strong>same three-step workflow for every PR</strong>. Which task decomposition pattern is most appropriate?",
+  options:[
+    "Prompt chaining: each aspect analyzed separately in sequential steps and combined in a final synthesis",
+    "An orchestrator-workers pattern that dynamically chooses which checks are needed",
+    "A single comprehensive prompt that handles all three aspects simultaneously",
+    "A routing pattern that first classifies the PR by type"
+  ],
+  correct:0,
+  explanation:"Prompt chaining is ideal for fixed, repeatable workflows where the steps are known in advance. Each PR goes through the same sequence: style → security → docs → synthesis. Orchestrator-workers is for dynamic decomposition; routing is for classification-based branching. Neither is needed when the workflow is always the same."
+},
+{
+  id:103, module:1, scenario:"Developer Productivity with Claude",
+  text:"Your system needs to handle customer requests that could be returns, billing disputes, or account changes — each requiring a completely different handler. Which task decomposition pattern fits best?",
+  options:[
+    "A routing pattern that classifies the request type first, then routes to the appropriate specialized handler",
+    "Prompt chaining with all three handlers running sequentially",
+    "An orchestrator-workers pattern that invokes all three handlers in parallel",
+    "A single prompt that handles all request types with conditional logic"
+  ],
+  correct:0,
+  explanation:"The routing pattern is designed for classification-based branching: classify input → route to the appropriate handler. When only ONE handler is needed per request and the choice depends on input type, routing is the right pattern. Prompt chaining runs all steps unnecessarily; orchestrator-workers is for dynamic multi-step decomposition."
+},
+{
+  id:104, module:1, scenario:"Multi-Agent Research System",
+  text:"A research project requires analyzing a complex topic from multiple angles — legal, technical, and financial — where the specific analysis needed depends on the topic. Which pattern should the coordinator use?",
+  options:[
+    "Orchestrator-workers: the coordinator analyzes the topic, determines which specialist subagents are needed at runtime, and delegates dynamically",
+    "Prompt chaining: run legal → technical → financial analysis in fixed sequence",
+    "Routing: classify the topic and send to a single handler",
+    "Parallelization: always invoke all three specialists regardless of relevance"
+  ],
+  correct:0,
+  explanation:"Orchestrator-workers is for dynamic task decomposition where the subtasks depend on the input. The coordinator reasons about which specialists are needed (maybe only legal and technical, not financial) and delegates at runtime. This differs from prompt chaining (fixed sequence) and routing (single handler)."
+},
+{
+  id:105, module:3, scenario:"Code Generation with Claude Code",
+  text:"You've created a custom slash command <code>/scaffold</code> with <code>$ARGUMENTS</code> in the template. A developer types <code>/scaffold user-service api</code>. How are the arguments accessed?",
+  options:[
+    "<code>$ARGUMENTS</code> = 'user-service api' (full string); <code>$0</code> = 'user-service', <code>$1</code> = 'api' (positional)",
+    "<code>$1</code> = 'user-service', <code>$2</code> = 'api' (shell-style positional)",
+    "<code>$ARGUMENTS[0]</code> = 'user-service', <code>$ARGUMENTS[1]</code> = 'api' (array indexing)",
+    "Arguments are not supported in custom commands; only the full string is available"
+  ],
+  correct:0,
+  explanation:"$ARGUMENTS gives the entire argument string. Positional arguments use $0 for the first, $1 for the second — NOT shell-style $1/$2. Named arguments are also supported via frontmatter: arguments: [name, type] → $name and $type. If $ARGUMENTS is not used in the template, it's appended automatically."
+},
+{
+  id:106, module:2, scenario:"Developer Productivity with Claude",
+  text:"The Grep tool and the Glob tool have different behaviors regarding <code>.gitignore</code>. Which statement is correct?",
+  options:[
+    "Grep (ripgrep) respects .gitignore by default and skips ignored files; Glob does NOT respect .gitignore by default",
+    "Both tools respect .gitignore by default",
+    "Neither tool respects .gitignore",
+    "Glob respects .gitignore but Grep does not"
+  ],
+  correct:0,
+  explanation:"Grep uses ripgrep which respects .gitignore by default — it automatically skips gitignored files. Glob does NOT respect .gitignore by default (set CLAUDE_CODE_GLOB_NO_IGNORE=false to enable it). This is a subtle but important difference when searching codebases with generated/vendored files."
+},
+{
+  id:107, module:5, scenario:"Developer Productivity with Claude",
+  text:"A hook script uses <code>exit 1</code> in a <code>PreToolUse</code> hook, intending to block a dangerous Write operation. What actually happens?",
+  options:[
+    "The Write operation <strong>proceeds normally</strong> — exit code 1 is a non-blocking error. Only exit code <strong>2</strong> blocks tool execution",
+    "The Write operation is blocked and the error is sent to Claude",
+    "The entire Claude Code session terminates",
+    "The Write operation is retried after a delay"
+  ],
+  correct:0,
+  explanation:"This is a critical gotcha: exit code 1 does NOT block operations in Claude Code hooks — it's treated as a non-blocking error (warning logged, execution continues). Only exit code 2 blocks the tool call and sends stderr to Claude as feedback. Many developers mistakenly use exit 1 (Unix convention for errors) expecting it to block."
+},
+{
+  id:108, module:2, scenario:"Developer Productivity with Claude",
+  text:"The Edit tool uses exact string replacement. What does this mean for matching?",
+  options:[
+    "The <code>old_string</code> must match character-for-character including whitespace and indentation — even a single space difference causes failure",
+    "The Edit tool uses fuzzy matching and ignores whitespace differences",
+    "The Edit tool uses regex patterns for flexible matching",
+    "The Edit tool matches based on line numbers, not string content"
+  ],
+  correct:0,
+  explanation:"The Edit tool requires exact character-for-character matching of old_string. A single whitespace or indentation difference will cause the match to fail. This is by design for precision — you're replacing exactly what you specify, nothing more. If the match fails, include more surrounding context to make it unique."
+},
+{
+  id:109, module:3, scenario:"Code Generation with Claude Code",
+  text:"A developer has both <code>CLAUDE.md</code> and <code>CLAUDE.local.md</code> in the project root. The team's CLAUDE.md says 'use tabs for indentation' but CLAUDE.local.md says 'use spaces'. Which instruction wins?",
+  options:[
+    "<code>CLAUDE.local.md</code> overrides <code>CLAUDE.md</code> — local personal preferences win over team defaults when they conflict",
+    "<code>CLAUDE.md</code> always takes priority as it's the team standard",
+    "The instructions cancel each other out and neither applies",
+    "Claude Code asks the user to resolve the conflict"
+  ],
+  correct:0,
+  explanation:"CLAUDE.local.md is specifically designed for personal overrides — it loads alongside CLAUDE.md but wins on conflicts. It's automatically gitignored, so each developer can customize without affecting the team's shared configuration in CLAUDE.md."
+},
+{
+  id:110, module:4, scenario:"Data Processing Pipeline",
+  text:"Your Batch API job processes 50,000 documents. You discover the Batch API discount can <strong>stack</strong> with another API feature. Which combination provides the maximum cost savings?",
+  options:[
+    "Batch API (50% off) + prompt caching (90% off cache reads) = up to <strong>95% total savings</strong>",
+    "Batch API (50% off) + streaming (30% off) = up to 80% savings",
+    "Batch API (50% off) + extended thinking (25% off) = up to 75% savings",
+    "Batch API discounts cannot stack with any other feature"
+  ],
+  correct:0,
+  explanation:"The Batch API's 50% discount stacks with prompt caching's 90% discount on cache reads. For workloads with high cache hit rates (common in batch processing where many requests share the same system prompt), this combination can save up to 95%. The 50% applies to ALL token types: input, output, cache reads, cache writes, and thinking tokens."
+},
+];
+
+// ============================================================
+//  STATE
+// ============================================================
+let currentMode = 'exam';
+let selectedModules = new Set([1,2,3,4,5]);
+let activeQuestions = [];
+let currentIndex = 0;
+let answers = {};
+let flagged = new Set();
+let timerInterval = null;
+let timeLeft = 90 * 60; // seconds
+let examSubmitted = false;
+
+// ============================================================
+//  LANDING PAGE LOGIC
+// ============================================================
+function toggleModule(el) {
+  const mod = el.dataset.module;
+  if (mod === 'all') {
+    const allActive = el.classList.contains('active');
+    document.querySelectorAll('.chip').forEach(c => {
+      if (allActive) c.classList.remove('active');
+      else c.classList.add('active');
+    });
+    if (allActive) selectedModules.clear();
+    else selectedModules = new Set([1,2,3,4,5]);
+  } else {
+    el.classList.toggle('active');
+    const m = parseInt(mod);
+    if (selectedModules.has(m)) selectedModules.delete(m);
+    else selectedModules.add(m);
+    // update "All" chip
+    const allChip = document.querySelector('[data-module="all"]');
+    if (selectedModules.size === 5) allChip.classList.add('active');
+    else allChip.classList.remove('active');
+  }
+  updateQuestionCount();
+}
+
+function updateQuestionCount() {
+  const count = QUESTIONS.filter(q => selectedModules.has(q.module)).length;
+  document.getElementById('totalQDisplay').textContent = count;
+  const minutes = Math.max(30, Math.ceil(count * 1.125)); // ~1.125 min per Q
+  document.getElementById('timeLimitDisplay').textContent = minutes + ' minutes';
+  timeLeft = minutes * 60;
+}
+
+function selectMode(el) {
+  document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  currentMode = el.dataset.mode;
+}
+
+// ============================================================
+//  START EXAM
+// ============================================================
+function startExam() {
+  if (selectedModules.size === 0) { alert('Select at least one module.'); return; }
+  activeQuestions = QUESTIONS.filter(q => selectedModules.has(q.module));
+  // Shuffle
+  for (let i = activeQuestions.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [activeQuestions[i], activeQuestions[j]] = [activeQuestions[j], activeQuestions[i]];
+  }
+  answers = {};
+  flagged = new Set();
+  examSubmitted = false;
+  currentIndex = 0;
+
+  document.getElementById('landingPage').style.display = 'none';
+  document.getElementById('quizPage').style.display = 'block';
+  document.getElementById('resultsPage').style.display = 'none';
+
+  if (currentMode === 'exam') {
+    startTimer();
+    document.getElementById('timerDisplay').style.display = '';
+  } else {
+    document.getElementById('timerDisplay').style.display = 'none';
+  }
+  if (currentMode === 'review') {
+    document.getElementById('submitBtn').style.display = 'none';
+    // auto-answer all correctly for review
+    activeQuestions.forEach(q => { answers[q.id] = q.correct; });
+    examSubmitted = true;
+  }
+
+  buildNavDots();
+  renderQuestion();
+}
+
+// ============================================================
+//  TIMER
+// ============================================================
+function startTimer() {
+  clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    if (timeLeft <= 0) { clearInterval(timerInterval); submitExam(); return; }
+    const m = Math.floor(timeLeft / 60);
+    const s = timeLeft % 60;
+    const display = document.getElementById('timerDisplay');
+    display.textContent = `${m}:${s.toString().padStart(2,'0')}`;
+    display.className = 'timer' + (timeLeft < 300 ? ' danger' : timeLeft < 600 ? ' warning' : '');
+  }, 1000);
+}
+
+// ============================================================
+//  RENDER QUESTION
+// ============================================================
+function renderQuestion() {
+  const q = activeQuestions[currentIndex];
+  const area = document.getElementById('questionArea');
+  const answered = answers[q.id] !== undefined;
+  const moduleNames = {1:'Agentic Architecture',2:'Tools & MCP',3:'Config & Workflows',4:'Prompt Engineering',5:'Context & Reliability'};
+
+  let optionsHtml = q.options.map((opt, i) => {
+    let cls = 'option';
+    if (answered && answers[q.id] === i) cls += ' selected';
+    if (examSubmitted || currentMode === 'review') {
+      if (i === q.correct) cls += ' correct-answer';
+      else if (answers[q.id] === i && i !== q.correct) cls += ' wrong-answer';
+    }
+    const letter = String.fromCharCode(65 + i);
+    const clickable = (!examSubmitted && currentMode !== 'review') ? `onclick="selectAnswer(${q.id},${i})"` : '';
+    return `<div class="${cls}" ${clickable}><div class="option-letter">${letter}</div><div class="option-text">${opt}</div></div>`;
+  }).join('');
+
+  const showExplanation = (currentMode === 'practice' && answered) || currentMode === 'review' || examSubmitted;
+
+  area.innerHTML = `
+    <div class="question-card ${answered ? 'answered' : ''} ${examSubmitted ? (answers[q.id] === q.correct ? 'correct' : 'incorrect') : ''}">
+      <div class="question-header">
+        <div>
+          <span class="scenario-badge">${q.scenario}</span>
+          <span class="module-badge">Module ${q.module}: ${moduleNames[q.module]}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:0.75rem">
+          <span class="points-badge">15 pts</span>
+          <button class="flag-btn ${flagged.has(q.id)?'flagged':''}" onclick="toggleFlag(${q.id})" title="Flag for review">${flagged.has(q.id)?'&#9873;':'&#9872;'}</button>
+        </div>
+      </div>
+      <div class="question-number">Question ${currentIndex + 1} of ${activeQuestions.length}</div>
+      <div class="question-text">${q.text}</div>
+      <div class="options-list">${optionsHtml}</div>
+      <div class="explanation ${showExplanation ? 'show' : ''}">
+        <h4>Explanation</h4>
+        <p>${q.explanation}</p>
+      </div>
+    </div>
+  `;
+
+  // Update progress
+  const answeredCount = Object.keys(answers).length;
+  document.getElementById('progressBar').style.width = (answeredCount / activeQuestions.length * 100) + '%';
+  document.getElementById('progressText').textContent = `${answeredCount} / ${activeQuestions.length}`;
+
+  updateNavDots();
+  document.getElementById('prevBtn').disabled = currentIndex === 0;
+  document.getElementById('nextBtn').textContent = currentIndex === activeQuestions.length - 1 ? 'Finish' : 'Next';
+}
+
+// ============================================================
+//  ANSWER & NAVIGATION
+// ============================================================
+function selectAnswer(qId, optIndex) {
+  answers[qId] = optIndex;
+  renderQuestion();
+  if (currentMode === 'practice') {
+    // Show explanation immediately
+    renderQuestion();
+  }
+}
+
+function toggleFlag(qId) {
+  if (flagged.has(qId)) flagged.delete(qId);
+  else flagged.add(qId);
+  renderQuestion();
+}
+
+function nextQuestion() {
+  if (currentIndex < activeQuestions.length - 1) {
+    currentIndex++;
+    renderQuestion();
+    window.scrollTo({top:0, behavior:'smooth'});
+  } else if (!examSubmitted) {
+    submitExam();
+  }
+}
+
+function prevQuestion() {
+  if (currentIndex > 0) {
+    currentIndex--;
+    renderQuestion();
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+}
+
+function goToQuestion(idx) {
+  currentIndex = idx;
+  renderQuestion();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function buildNavDots() {
+  const container = document.getElementById('navDots');
+  container.innerHTML = activeQuestions.map((q, i) =>
+    `<div class="nav-dot" onclick="goToQuestion(${i})" title="Q${i+1}">${i+1}</div>`
+  ).join('');
+}
+
+function updateNavDots() {
+  document.querySelectorAll('.nav-dot').forEach((dot, i) => {
+    const q = activeQuestions[i];
+    dot.className = 'nav-dot';
+    if (i === currentIndex) dot.classList.add('current');
+    if (answers[q.id] !== undefined) {
+      dot.classList.add('answered');
+      if (examSubmitted) {
+        dot.classList.add(answers[q.id] === q.correct ? 'correct' : 'incorrect');
+      }
+    }
+    if (flagged.has(q.id)) dot.classList.add('flagged');
+  });
+}
+
+// ============================================================
+//  SUBMIT & RESULTS
+// ============================================================
+function submitExam() {
+  const unanswered = activeQuestions.filter(q => answers[q.id] === undefined).length;
+  if (unanswered > 0 && currentMode === 'exam') {
+    if (!confirm(`You have ${unanswered} unanswered question(s). Submit anyway?`)) return;
+  }
+  clearInterval(timerInterval);
+  examSubmitted = true;
+  showResults();
+}
+
+function showResults() {
+  document.getElementById('quizPage').style.display = 'none';
+  document.getElementById('resultsPage').style.display = 'block';
+
+  let correct = 0, incorrect = 0, unanswered = 0;
+  const moduleStats = {};
+  const moduleNames = {1:'M1: Agentic Architecture',2:'M2: Tools & MCP',3:'M3: Config & Workflows',4:'M4: Prompt Engineering',5:'M5: Context & Reliability'};
+
+  activeQuestions.forEach(q => {
+    if (!moduleStats[q.module]) moduleStats[q.module] = {correct:0,total:0};
+    moduleStats[q.module].total++;
+    if (answers[q.id] === undefined) unanswered++;
+    else if (answers[q.id] === q.correct) { correct++; moduleStats[q.module].correct++; }
+    else incorrect++;
+  });
+
+  const total = activeQuestions.length;
+  const pct = Math.round(correct / total * 100);
+  const pass = pct >= 70;
+
+  document.getElementById('scoreValue').textContent = pct + '%';
+  document.getElementById('scoreCircle').className = 'score-circle ' + (pass ? 'pass' : 'fail');
+  document.getElementById('passStatus').textContent = pass ? 'PASSED' : 'NOT PASSED';
+  document.getElementById('passStatus').className = 'pass-status ' + (pass ? 'pass' : 'fail');
+
+  document.getElementById('statsGrid').innerHTML = `
+    <div class="stat-card"><div class="stat-value" style="color:var(--success)">${correct}</div><div class="stat-label">Correct</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--danger)">${incorrect}</div><div class="stat-label">Incorrect</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--warning)">${unanswered}</div><div class="stat-label">Unanswered</div></div>
+    <div class="stat-card"><div class="stat-value">${correct * 15}</div><div class="stat-label">Points (of ${total * 15})</div></div>
+  `;
+
+  const moduleColors = {1:'#6366f1',2:'#10b981',3:'#f59e0b',4:'#ec4899',5:'#8b5cf6'};
+  document.getElementById('moduleRows').innerHTML = Object.keys(moduleStats).sort().map(m => {
+    const s = moduleStats[m];
+    const mpct = Math.round(s.correct / s.total * 100);
+    return `<div class="module-row">
+      <div class="module-name">${moduleNames[m]}</div>
+      <div class="module-bar-bg"><div class="module-bar-fill" style="width:${mpct}%;background:${moduleColors[m]}"></div></div>
+      <div class="module-pct" style="color:${mpct>=70?'var(--success)':'var(--danger)'}">${mpct}%</div>
+    </div>`;
+  }).join('');
+
+  renderReview('all');
+}
+
+function renderReview(filter) {
+  let filtered = activeQuestions;
+  if (filter === 'incorrect') filtered = activeQuestions.filter(q => answers[q.id] !== undefined && answers[q.id] !== q.correct);
+  if (filter === 'correct') filtered = activeQuestions.filter(q => answers[q.id] === q.correct);
+  if (filter === 'flagged') filtered = activeQuestions.filter(q => flagged.has(q.id));
+  if (filter === 'unanswered') filtered = activeQuestions.filter(q => answers[q.id] === undefined);
+
+  const moduleNames = {1:'Agentic Architecture',2:'Tools & MCP',3:'Config & Workflows',4:'Prompt Engineering',5:'Context & Reliability'};
+  document.getElementById('reviewArea').innerHTML = filtered.map((q, idx) => {
+    const userAnswer = answers[q.id];
+    const isCorrect = userAnswer === q.correct;
+    return `<div class="question-card ${isCorrect ? 'correct' : userAnswer !== undefined ? 'incorrect' : ''}">
+      <div class="question-header">
+        <div><span class="scenario-badge">${q.scenario}</span><span class="module-badge">Module ${q.module}</span></div>
+        <span class="points-badge">${isCorrect ? '15' : '0'} / 15 pts</span>
+      </div>
+      <div class="question-text">${q.text}</div>
+      <div class="options-list">
+        ${q.options.map((opt, i) => {
+          let cls = 'option';
+          if (i === q.correct) cls += ' correct-answer';
+          if (userAnswer === i && i !== q.correct) cls += ' wrong-answer';
+          const letter = String.fromCharCode(65 + i);
+          return `<div class="${cls}"><div class="option-letter">${letter}</div><div class="option-text">${opt}</div></div>`;
+        }).join('')}
+      </div>
+      <div class="explanation show"><h4>Explanation</h4><p>${q.explanation}</p></div>
+    </div>`;
+  }).join('') || '<p style="color:var(--text-muted);text-align:center;padding:2rem;">No questions match this filter.</p>';
+}
+
+function filterReview(filter, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderReview(filter);
+}
+
+function retakeExam() {
+  document.getElementById('resultsPage').style.display = 'none';
+  document.getElementById('landingPage').style.display = 'flex';
+  clearInterval(timerInterval);
+  updateQuestionCount();
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', e => {
+  if (document.getElementById('quizPage').style.display === 'block') {
+    if (e.key === 'ArrowRight' || e.key === 'n') nextQuestion();
+    if (e.key === 'ArrowLeft' || e.key === 'p') prevQuestion();
+    if (e.key >= '1' && e.key <= '4') {
+      const q = activeQuestions[currentIndex];
+      if (!examSubmitted && currentMode !== 'review') selectAnswer(q.id, parseInt(e.key) - 1);
+    }
+    if (e.key === 'f') { toggleFlag(activeQuestions[currentIndex].id); }
+  }
+});
+</script>
+</body>
+</html>

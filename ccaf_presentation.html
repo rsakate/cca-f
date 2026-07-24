@@ -1,0 +1,1358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CCA-F Certification - Complete Study Guide</title>
+<style>
+  :root {
+    --primary: #D97706;
+    --primary-dark: #B45309;
+    --bg: #0f172a;
+    --card-bg: #1e293b;
+    --text: #e2e8f0;
+    --text-muted: #94a3b8;
+    --accent: #38bdf8;
+    --green: #4ade80;
+    --red: #f87171;
+    --purple: #a78bfa;
+    --border: #334155;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+  .slide { min-height: 100vh; padding: 40px 60px; display: none; flex-direction: column; }
+  .slide.active { display: flex; }
+  .slide-number { position: fixed; bottom: 20px; right: 30px; color: var(--text-muted); font-size: 14px; z-index: 100; }
+  h1 { font-size: 2.8em; color: var(--primary); margin-bottom: 10px; }
+  h2 { font-size: 2em; color: var(--accent); margin-bottom: 20px; border-bottom: 2px solid var(--border); padding-bottom: 10px; }
+  h3 { font-size: 1.4em; color: var(--green); margin: 15px 0 8px; }
+  h4 { font-size: 1.1em; color: var(--purple); margin: 10px 0 5px; }
+  p { margin: 8px 0; font-size: 1.05em; }
+  ul, ol { margin: 8px 0 8px 25px; }
+  li { margin: 4px 0; font-size: 1em; }
+  code { background: #334155; padding: 2px 6px; border-radius: 4px; font-family: 'Fira Code', 'Consolas', monospace; font-size: 0.9em; color: #fbbf24; }
+  pre { background: #0d1117; border: 1px solid var(--border); border-radius: 8px; padding: 15px; margin: 10px 0; overflow-x: auto; font-size: 0.85em; line-height: 1.5; }
+  pre code { background: none; padding: 0; color: #e2e8f0; }
+  .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin: 10px 0; }
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 15px; margin: 15px 0; }
+  .highlight { background: linear-gradient(135deg, #1e3a5f, #1e293b); border-left: 4px solid var(--primary); padding: 15px; border-radius: 0 8px 8px 0; margin: 10px 0; }
+  .exam-tip { background: linear-gradient(135deg, #1a2e1a, #1e293b); border-left: 4px solid var(--green); padding: 12px 15px; border-radius: 0 8px 8px 0; margin: 10px 0; }
+  .exam-tip::before { content: "EXAM TIP: "; font-weight: bold; color: var(--green); }
+  .warning { background: linear-gradient(135deg, #2e1a1a, #1e293b); border-left: 4px solid var(--red); padding: 12px 15px; border-radius: 0 8px 8px 0; margin: 10px 0; }
+  .warning::before { content: "KEY CONCEPT: "; font-weight: bold; color: var(--red); }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 0.95em; }
+  th { background: var(--primary-dark); color: white; padding: 10px 12px; text-align: left; }
+  td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+  tr:hover td { background: #253349; }
+  .nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; z-index: 100; }
+  .nav button { padding: 10px 25px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text); border-radius: 8px; cursor: pointer; font-size: 14px; transition: 0.2s; }
+  .nav button:hover { background: var(--primary); color: white; }
+  .toc { list-style: none; margin: 0; padding: 0; }
+  .toc li { padding: 8px 15px; margin: 3px 0; background: var(--card-bg); border-radius: 8px; cursor: pointer; transition: 0.2s; border-left: 3px solid transparent; }
+  .toc li:hover { border-left-color: var(--primary); background: #253349; }
+  .toc .module-num { color: var(--primary); font-weight: bold; margin-right: 8px; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; margin: 0 3px; }
+  .badge-api { background: #7c3aed33; color: #a78bfa; }
+  .badge-cc { background: #0369a133; color: #38bdf8; }
+  .badge-sdk { background: #15803d33; color: #4ade80; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
+  .flow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 10px 0; }
+  .flow-box { background: var(--primary-dark); padding: 8px 16px; border-radius: 8px; font-weight: bold; }
+  .flow-arrow { color: var(--primary); font-size: 1.5em; }
+  .progress-bar { height: 6px; background: var(--border); border-radius: 3px; margin: 5px 0; }
+  .progress-fill { height: 100%; background: var(--primary); border-radius: 3px; transition: 0.3s; }
+  @media (max-width: 768px) {
+    .slide { padding: 20px; }
+    h1 { font-size: 1.8em; }
+    .two-col, .three-col, .card-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- SLIDE 0: Title -->
+<div class="slide active" id="s0">
+  <div style="display:flex;flex-direction:column;justify-content:center;align-items:center;flex:1;text-align:center;">
+    <div style="font-size:1.2em;color:var(--primary);letter-spacing:3px;margin-bottom:20px;">AI PIONEERS</div>
+    <h1 style="font-size:3.5em;margin-bottom:5px;">CCA-F</h1>
+    <p style="font-size:1.6em;color:var(--accent);margin-bottom:30px;">Claude Certified Architect &mdash; Foundations</p>
+    <p style="font-size:1.2em;color:var(--text-muted);">Complete Exam Study Guide</p>
+    <p style="color:var(--text-muted);margin-top:10px;">5 Modules &bull; 30 Sections &bull; All Exam Topics</p>
+    <div style="margin-top:40px;">
+      <div style="display:flex;gap:15px;justify-content:center;flex-wrap:wrap;">
+        <span class="badge badge-api" style="font-size:1em;padding:6px 14px;">Claude API</span>
+        <span class="badge badge-cc" style="font-size:1em;padding:6px 14px;">Claude Code</span>
+        <span class="badge badge-sdk" style="font-size:1em;padding:6px 14px;">Agent SDK</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 1: Table of Contents -->
+<div class="slide" id="s1">
+  <h2>Table of Contents</h2>
+  <div class="two-col">
+    <div>
+      <h3>Module 1: Agentic Architecture</h3>
+      <ul class="toc">
+        <li onclick="goTo(2)"><span class="module-num">1.1</span> The Agentic Loop & stop_reason</li>
+        <li onclick="goTo(3)"><span class="module-num">1.2</span> Multi-Agent Orchestration</li>
+        <li onclick="goTo(4)"><span class="module-num">1.3</span> Context Passing & Typed Objects</li>
+        <li onclick="goTo(5)"><span class="module-num">1.4</span> Step Enforcement & Gates</li>
+      </ul>
+      <h3>Module 2: Tool Design & MCP</h3>
+      <ul class="toc">
+        <li onclick="goTo(6)"><span class="module-num">2.1</span> Tool Interfaces & Selection</li>
+        <li onclick="goTo(7)"><span class="module-num">2.2</span> Structured Errors & Retries</li>
+        <li onclick="goTo(8)"><span class="module-num">2.3</span> tool_choice & Selection Control</li>
+        <li onclick="goTo(9)"><span class="module-num">2.4</span> MCP Servers & Built-in Tools</li>
+        <li onclick="goTo(10)"><span class="module-num">2.5</span> Built-in Tool Best Practices & Recovery</li>
+      </ul>
+      <h3>Module 3: Configuration & Workflows</h3>
+      <ul class="toc">
+        <li onclick="goTo(11)"><span class="module-num">3.1</span> CLAUDE.md Hierarchy</li>
+        <li onclick="goTo(12)"><span class="module-num">3.2</span> Slash Commands & Skills</li>
+        <li onclick="goTo(13)"><span class="module-num">3.3</span> Path-Specific Rules</li>
+        <li onclick="goTo(14)"><span class="module-num">3.4</span> Plan Mode vs Direct Execution</li>
+        <li onclick="goTo(15)"><span class="module-num">3.5</span> Iterative Refinement & CI/CD</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Module 4: Prompt Engineering</h3>
+      <ul class="toc">
+        <li onclick="goTo(16)"><span class="module-num">4.1</span> Explicit Criteria & Precision</li>
+        <li onclick="goTo(17)"><span class="module-num">4.2</span> Few-Shot & Generalization</li>
+        <li onclick="goTo(18)"><span class="module-num">4.3</span> Structured Output & Validation</li>
+        <li onclick="goTo(19)"><span class="module-num">4.4</span> Batch API & Multipass</li>
+      </ul>
+      <h3>Module 5: Context & Reliability</h3>
+      <ul class="toc">
+        <li onclick="goTo(20)"><span class="module-num">5.1</span> Context Preservation & Optimization</li>
+        <li onclick="goTo(21)"><span class="module-num">5.2</span> Escalation & Ambiguity Resolution</li>
+        <li onclick="goTo(22)"><span class="module-num">5.3</span> Error Propagation in Multi-Agent</li>
+        <li onclick="goTo(23)"><span class="module-num">5.4</span> Large Codebase Exploration</li>
+        <li onclick="goTo(24)"><span class="module-num">5.5</span> Human Review & Confidence</li>
+        <li onclick="goTo(25)"><span class="module-num">5.6</span> Information Provenance</li>
+      </ul>
+      <h3>Bonus</h3>
+      <ul class="toc">
+        <li onclick="goTo(26)"><span class="module-num">B.1</span> Hooks System Deep Dive</li>
+        <li onclick="goTo(27)"><span class="module-num">B.2</span> Quick Reference Cheat Sheet</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 2: Agentic Loop -->
+<div class="slide" id="s2">
+  <h2>1.1 &mdash; The Agentic Loop & stop_reason</h2>
+  <p>An agentic loop is NOT a for-loop with a fixed iteration count. It runs until Claude says it is done. The mechanism is <code>stop_reason</code>.</p>
+  <div class="card-grid">
+    <div class="card">
+      <h3>stop_reason Values</h3>
+      <table>
+        <tr><th>Value</th><th>Meaning</th><th>Your Code Does</th></tr>
+        <tr><td><code>"tool_use"</code></td><td>Claude wants to invoke a tool</td><td>Execute the tool, append result as user message, loop again</td></tr>
+        <tr><td><code>"end_turn"</code></td><td>Claude finished its response</td><td>Extract text from content[], break out of loop</td></tr>
+        <tr><td><code>"max_tokens"</code></td><td>Response cut at token limit</td><td>Log warning; consider summarizing and retrying</td></tr>
+        <tr><td><code>"stop_sequence"</code></td><td>Custom stop string matched</td><td>Treat as end_turn unless you have specific logic</td></tr>
+        <tr><td><code>"pause_turn"</code></td><td>Server-side iteration limit reached (default 10)</td><td>Send assistant response back to continue processing</td></tr>
+        <tr><td><code>"refusal"</code></td><td>Claude declined to respond</td><td>Handle refusal, possibly rephrase request</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <h3>The Loop Pattern</h3>
+<pre><code>response = client.messages.create(
+    model="claude-sonnet-4-6",
+    messages=messages,
+    tools=tools
+)
+
+while response.stop_reason == "tool_use":
+    # Extract tool_use blocks from response
+    tool_block = response.content[i]  # type: tool_use
+    # Execute tool externally
+    result = execute_tool(tool_block.name, tool_block.input)
+    # Append assistant msg + tool_result to messages
+    messages.append({"role":"assistant","content":response.content})
+    messages.append({"role":"user","content":[{
+        "type":"tool_result",
+        "tool_use_id": tool_block.id,
+        "content": result
+    }]})
+    # Loop again
+    response = client.messages.create(..., messages=messages)
+</code></pre>
+    </div>
+  </div>
+  <div class="exam-tip">The agentic loop checks <code>stop_reason</code>, NOT a fixed iteration count or natural language like "I'm done". Tool results are appended back as <b>user messages</b> with <code>tool_result</code> blocks. Checking response text for "done" is an <b>anti-pattern</b>.</div>
+  <div class="warning">If <code>stop_reason</code> is <code>"max_tokens"</code>, the tool call JSON may be truncated mid-way. You must retry with higher <code>max_tokens</code>. Note: <code>"pause_turn"</code> means the server-side loop hit its iteration cap (default 10) &mdash; send the response back to continue.</div>
+</div>
+
+<!-- SLIDE 3: Multi-Agent Orchestration -->
+<div class="slide" id="s3">
+  <h2>1.2 &mdash; Multi-Agent Orchestration (Hub-and-Spoke)</h2>
+  <div class="flow">
+    <div class="flow-box">Inbound Request</div><span class="flow-arrow">&rarr;</span>
+    <div class="flow-box" style="background:#1e40af">COORDINATOR</div><span class="flow-arrow">&rarr;</span>
+    <div class="flow-box">Classifier</div><span class="flow-arrow">&rarr;</span>
+    <div class="flow-box">Enricher</div><span class="flow-arrow">&rarr;</span>
+    <div class="flow-box">Drafter</div><span class="flow-arrow">&rarr;</span>
+    <div class="flow-box">Validator</div><span class="flow-arrow">&rarr;</span>
+    <div class="flow-box" style="background:#15803d">Output</div>
+  </div>
+  <div class="two-col">
+    <div class="card">
+      <h3>Hub-and-Spoke Pattern</h3>
+      <ul>
+        <li><b>Coordinator (Hub)</b>: Receives request, breaks into subtasks, delegates, aggregates results</li>
+        <li><b>Subagents (Spokes)</b>: Specialized for specific task types, run in isolated context, return results to coordinator</li>
+        <li>Subagents have <b>NO shared memory</b> &mdash; coordinator owns the state</li>
+        <li>Each subagent is an independent API call</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Why Separate Subagents?</h3>
+      <ul>
+        <li><b>Testable</b>: Each step can be tested independently</li>
+        <li><b>Retryable</b>: Failed step can be retried without re-running everything</li>
+        <li><b>Replaceable</b>: Swap out implementations without affecting others</li>
+        <li><b>Context isolation</b>: Classification errors don't contaminate the draft</li>
+        <li>One giant prompt that does everything breaks down in production</li>
+      </ul>
+    </div>
+  </div>
+  <div class="exam-tip">Subagents do NOT automatically inherit parent context, conversation history, or tool access. You must <b>explicitly pass</b> all necessary information.</div>
+  <div class="card" style="margin-top:15px;">
+    <h3>Task Decomposition Patterns</h3>
+    <table>
+      <tr><th>Pattern</th><th>How It Works</th><th>Use When</th></tr>
+      <tr><td><b>Prompt Chaining</b></td><td>Sequential steps: output of step N feeds into step N+1</td><td>Fixed, same workflow every time (e.g., style &rarr; security &rarr; docs review)</td></tr>
+      <tr><td><b>Orchestrator-Workers</b></td><td>Coordinator dynamically decides which workers to invoke</td><td>Variable tasks requiring dynamic routing</td></tr>
+      <tr><td><b>Routing</b></td><td>Classify first, then route to specialized handler</td><td>Input types need different handling</td></tr>
+      <tr><td><b>Parallelization</b></td><td>Fan out independent subtasks simultaneously</td><td>Independent work (billing + returns for same customer)</td></tr>
+    </table>
+    <div class="exam-tip">For a <b>fixed, repeatable workflow</b> (same 3 checks on every PR), use <b>prompt chaining</b>. For dynamic routing, use orchestrator-workers.</div>
+  </div>
+  <div class="card" style="margin-top:10px;">
+    <h3>fork_session</h3>
+    <ul>
+      <li>Creates <b>independent branches</b> from an existing session context</li>
+      <li>Each fork preserves the prior analysis but explores a different direction</li>
+      <li>Avoids context pollution between alternative approaches</li>
+      <li><b>Use case</b>: Engineer identified two refactoring approaches &mdash; fork to explore each independently</li>
+    </ul>
+  </div>
+</div>
+
+<!-- SLIDE 4: Context Passing -->
+<div class="slide" id="s4">
+  <h2>1.3 &mdash; Context Passing & Typed Objects</h2>
+  <div class="two-col">
+    <div class="card">
+      <h3>Explicit vs. Implicit Context</h3>
+      <p><b>Problem:</b> Implicit assumptions produce wrong answers. When context travels between agents, every handoff must be explicit.</p>
+      <ul>
+        <li><b>Structured context</b> is passed explicitly via typed objects (e.g., <code>TicketContext</code>)</li>
+        <li>Each field has a clear meaning and type</li>
+        <li>No ambiguity about what was passed</li>
+      </ul>
+<pre><code>@dataclass
+class TicketContext:
+    ticket_text: str
+    product_area: str | None = None
+    severity: str | None = None
+    intent: str | None = None
+    customer_tier: str | None = None
+</code></pre>
+    </div>
+    <div class="card">
+      <h3>Context Passing Patterns</h3>
+      <h4>Pattern 1: Coordinator Summary</h4>
+      <p>Pass the coordinator's summary of subagent findings in the Task tool call</p>
+      <h4>Pattern 2: Chain Results</h4>
+      <p>Chain subagent calls: first get results, then invoke next agent with those results as context</p>
+      <h4>Anti-Patterns</h4>
+      <ul>
+        <li style="color:var(--red);">Having subagent query shared DB (fragile coupling)</li>
+        <li style="color:var(--red);">Having synthesis agent call search tools directly (wrong separation)</li>
+        <li style="color:var(--red);">Assuming subagent inherits parent context</li>
+      </ul>
+    </div>
+  </div>
+  <div class="warning">Subagents do NOT inherit parent context automatically. The coordinator must explicitly pass customer context and available tools to each subagent.</div>
+</div>
+
+<!-- SLIDE 5: Step Enforcement -->
+<div class="slide" id="s5">
+  <h2>1.4 &mdash; Step Enforcement & Programmatic Gates</h2>
+  <div class="two-col">
+    <div class="card">
+      <h3>Why Gates?</h3>
+      <p>Prompt instructions alone are <b>unreliable under load</b>. Code enforces order; prompts suggest it.</p>
+      <ul>
+        <li>Programmatic gates block downstream steps until upstream steps produce verified results</li>
+        <li>Example: <code>process_refund</code> should NOT run until <code>get_customer</code> and <code>lookup_order</code> complete</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Enforcement Mechanisms</h3>
+      <table>
+        <tr><th>Mechanism</th><th>Best For</th></tr>
+        <tr><td><code>PostToolUse</code> Hook</td><td>Validate whether prerequisite tools were called before allowing a protected tool</td></tr>
+        <tr><td><code>allowedTools</code></td><td>Restrict which tools a subagent can access</td></tr>
+        <tr><td><code>tool_choice</code></td><td>Force specific tool for a specific turn</td></tr>
+        <tr><td>Orchestration code</td><td>Pre-configured pipeline that runs steps in sequence</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="card" style="margin-top:15px;">
+    <h3>Programmatic vs. Prompt-Based Enforcement</h3>
+    <table>
+      <tr><th>Approach</th><th>Reliability</th><th>When to Use</th></tr>
+      <tr><td><b>Programmatic</b> (hooks, gates, allowedTools)</td><td style="color:var(--green);">Deterministic, 0% failure</td><td>Compliance, security, financial ops</td></tr>
+      <tr><td><b>Prompt-based</b> (system prompt rules)</td><td style="color:var(--red);">Probabilistic, can be bypassed</td><td>Non-critical preferences</td></tr>
+    </table>
+    <h4>Refinement Loop Limits</h4>
+    <p>Set a <b>hard iteration limit</b> (e.g., max 3 rounds) to control costs and latency. Unlimited iteration is impractical; adaptive stopping is complex to implement reliably.</p>
+  </div>
+  <div class="exam-tip">When the exam asks about "most reliable enforcement" for tool ordering, choose <b>PostToolUse hooks</b> or <b>orchestration code</b> over system prompt rules. Prompts suggest; code enforces. Programmatic = 0% failure; prompts = probabilistic.</div>
+</div>
+
+<!-- SLIDE 6: Tool Interfaces -->
+<div class="slide" id="s6">
+  <h2>2.1 &mdash; Tool Interfaces & Selection Reliability</h2>
+  <p>The model never sees your tool implementation. It chooses a tool from three things only: <b>name</b>, <b>description</b>, and <b>parameter schema</b>.</p>
+  <div class="card">
+    <h3>Strong vs. Weak Tool Interfaces</h3>
+    <table>
+      <tr><th>Lever</th><th style="color:var(--red)">Weak</th><th style="color:var(--green)">Strong</th></tr>
+      <tr><td><b>Name</b></td><td><code>search</code>, <code>lookup</code></td><td><code>search_products</code>, <code>get_order_status</code> (object + action)</td></tr>
+      <tr><td><b>Description</b></td><td>"Search for stuff in the system."</td><td>Says when to use it AND when NOT to (explicitly defers to sibling tool)</td></tr>
+      <tr><td><b>Parameters</b></td><td><code>q: string</code></td><td><code>order_id</code> typed with regex pattern <code>^NP-[0-9]{6}$</code></td></tr>
+    </table>
+  </div>
+  <div class="highlight">
+    <h4>Best Practices for Tool Definitions</h4>
+    <ul>
+      <li><b>3-4+ sentence descriptions</b> that explain what, when, when-NOT-to-use, and caveats</li>
+      <li><b>Typed, specific parameters</b> with regex patterns where applicable</li>
+      <li><b>Meaningful namespacing</b>: prefix with service (<code>github_list_prs</code>)</li>
+      <li><b>High-signal responses</b>: Return only fields Claude needs for next step</li>
+      <li>Selection reliability is an <b>interface problem</b>, not a model-size problem</li>
+    </ul>
+  </div>
+  <div class="exam-tip">Selection reliability comes from strong interfaces (names, descriptions, schemas) - NOT from a bigger model. Same model, better tools = better selection.</div>
+</div>
+
+<!-- SLIDE 7: Structured Errors -->
+<div class="slide" id="s7">
+  <h2>2.2 &mdash; Structured Errors & Retry Logic</h2>
+  <div class="two-col">
+    <div class="card">
+      <h3>Return Failures as Data, Never Exceptions</h3>
+<pre><code># Structured error envelope
+{
+    "isError": True,
+    "isRetryable": True,   # Transient failure
+    "content": "Service timeout after 30s"
+}
+
+# vs. permanent failure
+{
+    "isError": True,
+    "isRetryable": False,  # Don't retry
+    "content": "Order NP-999999 not found (404)"
+}</code></pre>
+      <p>The envelope lets the loop retry a timeout and stop on a 404 &mdash; the model never sees a Python crash.</p>
+    </div>
+    <div class="card">
+      <h3>Retry Logic Pattern</h3>
+<pre><code>MAX_RETRIES = 3
+for attempt in range(MAX_RETRIES):
+    result = call_tool(input)
+    if not result.get("isError"):
+        return result  # Success
+    if not result.get("isRetryable"):
+        return result  # Permanent failure, stop
+    # Transient failure, retry with backoff
+    time.sleep(2 ** attempt)
+return {"isError": True, "content": "Max retries exceeded"}</code></pre>
+      <h4>Key Distinction</h4>
+      <table>
+        <tr><th>Scenario</th><th>isError</th><th>isRetryable</th></tr>
+        <tr><td>Timeout / 503</td><td>True</td><td>True</td></tr>
+        <tr><td>404 Not Found</td><td>True</td><td>False</td></tr>
+        <tr><td>No results found</td><td><b>False</b></td><td>N/A</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="warning">"No data found" is NOT an error &mdash; it's a valid empty result (<code>isError: false</code>). A timeout IS an error that should be retried.</div>
+</div>
+
+<!-- SLIDE 8: tool_choice -->
+<div class="slide" id="s8">
+  <h2>2.3 &mdash; tool_choice & Selection Control</h2>
+  <div class="card">
+    <h3>tool_choice Options</h3>
+    <table>
+      <tr><th>Value</th><th>Behavior</th><th>Use Case</th></tr>
+      <tr><td><code>auto</code></td><td>Claude decides whether to call any tools or respond directly</td><td>Default; most flexible</td></tr>
+      <tr><td><code>any</code></td><td>Claude MUST use one of the provided tools (but picks which)</td><td>Force tool use without specifying which</td></tr>
+      <tr><td><code>{"type":"tool","name":"X"}</code></td><td>Claude MUST use the specified tool</td><td>Deterministic classification step</td></tr>
+      <tr><td><code>none</code></td><td>Claude cannot use any tools</td><td>Prevent all tool use</td></tr>
+    </table>
+  </div>
+  <div class="two-col">
+    <div class="highlight">
+      <h4>When to Use Each</h4>
+      <ul>
+        <li><code>auto</code>: General conversation, agent decides</li>
+        <li><code>any</code>: Force at least one tool call per turn</li>
+        <li>Forced <code>tool</code>: Deterministic triage/classification &mdash; always one clean output</li>
+        <li><code>none</code>: Pure text response needed</li>
+      </ul>
+    </div>
+    <div class="highlight">
+      <h4>Important Limitations</h4>
+      <ul>
+        <li>With <code>any</code> or <code>tool</code>: No natural language before tool_use blocks (prefills assistant message)</li>
+        <li><b>Manual</b> extended thinking: Only supports <code>auto</code> and <code>none</code></li>
+        <li><b>Adaptive</b> thinking: Supports ALL tool_choice values</li>
+        <li>Changing <code>tool_choice</code> invalidates cached message blocks</li>
+      </ul>
+    </div>
+  </div>
+  <div class="exam-tip">Forcing the classifier tool with <code>tool_choice: {"type":"tool","name":"classify"}</code> makes triage deterministic &mdash; always exactly one classification per ticket.</div>
+</div>
+
+<!-- SLIDE 9: MCP -->
+<div class="slide" id="s9">
+  <h2>2.4 &mdash; MCP Servers & Built-in Claude Code Tools</h2>
+  <div class="two-col">
+    <div class="card">
+      <h3>Model Context Protocol (MCP)</h3>
+      <p>Open-source standard for connecting AI apps to external systems.</p>
+      <h4>Transport Types</h4>
+      <ul>
+        <li><b>STDIO</b>: Local processes (Claude Code spawns process, talks via stdin/stdout)</li>
+        <li><b>StreamableHTTP / SSE</b>: Remote servers via HTTP</li>
+      </ul>
+      <h4>.mcp.json Configuration</h4>
+<pre><code>{
+  "mcpServers": {
+    "northpeak-orders": {
+      "command": "python3",
+      "args": ["mcp_servers/orders_server.py"]
+    },
+    "northpeak-docs": {
+      "command": "python3",
+      "args": ["mcp_servers/docs_server.py"]
+    }
+  }
+}</code></pre>
+      <p>Tool naming: <code>mcp__&lt;server&gt;__&lt;tool&gt;</code></p>
+    </div>
+    <div class="card">
+      <h3>Built-in Claude Code Tools</h3>
+      <table>
+        <tr><th>Tool</th><th>Purpose</th><th>Key Details</th></tr>
+        <tr><td><code>Read</code></td><td>Read files with line numbers</td><td>Supports offset/limit for large files, reads images &amp; PDFs. <b>Preferred over Bash cat/head/tail</b></td></tr>
+        <tr><td><code>Write</code></td><td>Create new files or full rewrites</td><td>Use for new files. <b>Always Read back after Write</b> to verify</td></tr>
+        <tr><td><code>Edit</code></td><td>Precise string replacement edits</td><td>Requires unique <code>old_string</code>. If "not unique" error: include more surrounding context</td></tr>
+        <tr><td><code>Bash</code></td><td>Shell commands, build tools</td><td>For running tests, build tools (npm, gradle). <b>Avoid for reading files</b></td></tr>
+        <tr><td><code>Grep</code></td><td>Fast content search (ripgrep)</td><td>Cross-platform. Search: name, calls <code>fn(</code>, and imports</td></tr>
+        <tr><td><code>Glob</code></td><td>Find files by pattern</td><td><b>Cross-platform consistent</b> (vs Bash find which varies macOS/Linux)</td></tr>
+        <tr><td><code>Task</code></td><td>Spawn subagent tasks</td><td>Isolated context, no parent inheritance</td></tr>
+      </table>
+      <h4>Incremental Exploration Pattern</h4>
+      <div class="flow">
+        <div class="flow-box">Glob</div><span class="flow-arrow">&rarr;</span>
+        <div class="flow-box">Grep</div><span class="flow-arrow">&rarr;</span>
+        <div class="flow-box">Read</div><span class="flow-arrow">&rarr;</span>
+        <div class="flow-box">Edit</div>
+      </div>
+      <p style="color:var(--text-muted);">Find files &rarr; Search patterns (imports, calls) &rarr; Read selectively &rarr; Change minimally</p>
+    </div>
+  </div>
+  <div class="exam-tip">Use existing MCP servers (e.g., Jira) rather than building custom ones or using raw curl. MCP gives the agent data directly without copy-paste.</div>
+  <div class="card" style="margin-top:15px;">
+    <h3>MCP Credential Security</h3>
+    <ul>
+      <li>Use <b>environment variable expansion</b> in .mcp.json: <code>"password": "$DB_PASSWORD"</code></li>
+      <li>Version-control .mcp.json with variable references, NOT hardcoded credentials</li>
+      <li>Each developer sets actual values via their local environment</li>
+    </ul>
+  </div>
+</div>
+
+<!-- SLIDE 10: Built-in Tool Best Practices -->
+<div class="slide" id="s10">
+  <h2>2.5 &mdash; Built-in Tool Best Practices & Recovery</h2>
+  <div class="two-col">
+    <div class="card">
+      <h3>Tool Selection Decision Tree</h3>
+      <table>
+        <tr><th>Need</th><th>Use</th><th>NOT</th></tr>
+        <tr><td>Read file contents</td><td><code>Read</code></td><td>Bash cat/head/tail</td></tr>
+        <tr><td>Edit existing file</td><td><code>Edit</code></td><td>Bash sed/awk</td></tr>
+        <tr><td>Create new file</td><td><code>Write</code></td><td>Bash echo &gt;</td></tr>
+        <tr><td>Search content in files</td><td><code>Grep</code></td><td>Bash grep</td></tr>
+        <tr><td>Find files by name</td><td><code>Glob</code></td><td>Bash find</td></tr>
+        <tr><td>Run build/test commands</td><td><code>Bash</code></td><td>&mdash;</td></tr>
+        <tr><td>Run language analysis</td><td><code>Bash</code></td><td>&mdash;</td></tr>
+      </table>
+      <div class="warning">Prefer dedicated tools over Bash. Use Bash only for shell-specific operations (running tests, build tools, git commands).</div>
+    </div>
+    <div class="card">
+      <h3>Error Recovery Strategies</h3>
+      <h4>Edit Tool: "old_string not unique"</h4>
+      <ol>
+        <li><b>First:</b> Try Edit again with a <b>larger substring</b> including more surrounding context to make the match unique</li>
+        <li><b>Fallback:</b> Read the file, then use Write for a complete rewrite (last resort)</li>
+        <li><b>Never:</b> Use Bash sed or ask user to edit manually</li>
+      </ol>
+      <h4>Post-Write Verification</h4>
+      <ul>
+        <li>After using Write, <b>always Read the file back</b> to verify content matches expectations</li>
+        <li>Especially critical for generated code (migrations, configs)</li>
+      </ul>
+      <h4>Understanding Legacy Code</h4>
+      <ul>
+        <li>For old files: use Grep to find <b>test files or docs</b> that reference the module</li>
+        <li>Tests show how it's used; docs explain why it exists</li>
+      </ul>
+    </div>
+  </div>
+  <div class="card" style="margin-top:15px;">
+    <h3>Grep Patterns for Function Usage</h3>
+    <p>To find all usages of a function, run <b>all three searches</b>:</p>
+    <div class="flow">
+      <div class="flow-box">grep functionName</div><span class="flow-arrow">+</span>
+      <div class="flow-box">grep functionName(</div><span class="flow-arrow">+</span>
+      <div class="flow-box">grep import.*functionName</div>
+    </div>
+    <p style="color:var(--text-muted);">Name (declarations/references) + Calls (invocations) + Imports (usage patterns)</p>
+    <div class="exam-tip">When a function is re-exported under aliases via wrapper modules, first <b>read the wrappers</b> to identify all exposed names, then Grep for <b>each name</b> across the codebase.</div>
+  </div>
+</div>
+
+<!-- SLIDE 11: CLAUDE.md -->
+<div class="slide" id="s11">
+  <h2>3.1 &mdash; CLAUDE.md Configuration Hierarchy</h2>
+  <div class="card">
+    <h3>3-Level Configuration (More Specific Wins)</h3>
+    <table>
+      <tr><th>Level</th><th>Location</th><th>Scope</th><th>Shared?</th></tr>
+      <tr><td><b>User</b></td><td><code>~/.claude/CLAUDE.md</code></td><td>Personal preferences, all projects</td><td>No</td></tr>
+      <tr><td><b>Project</b></td><td><code>.claude/CLAUDE.md</code> or <code>./CLAUDE.md</code></td><td>Team-shared via Git</td><td>Yes</td></tr>
+      <tr><td><b>Local</b></td><td><code>./CLAUDE.local.md</code></td><td>Personal project-specific (.gitignore)</td><td>No</td></tr>
+    </table>
+    <p style="margin-top:10px;"><b>Precedence</b>: Instructions closer to working directory are read last = <b>higher priority</b>. Directory-level CLAUDE.md in subdirectories loads on-demand.</p>
+  </div>
+  <div class="two-col">
+    <div class="card">
+      <h3>@import Syntax</h3>
+<pre><code># In CLAUDE.md:
+@docs/coding-standards.md
+@package.json
+@~/.claude/my-project-instructions.md</code></pre>
+      <ul>
+        <li>Relative paths resolve from the file containing the import</li>
+        <li>Recursive imports supported (max 4 hops)</li>
+        <li>External imports require approval dialog</li>
+        <li>Use backticks to prevent: <code>`@README`</code> is literal</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Debugging with /memory</h3>
+      <ul>
+        <li><code>/memory</code> &mdash; Lists all CLAUDE.md files and their locations</li>
+        <li><code>/context</code> &mdash; Shows which files actually loaded into current session</li>
+        <li><code>/doctor</code> &mdash; Proposes trims for bloated CLAUDE.md</li>
+      </ul>
+      <h4>What Survives /compact</h4>
+      <ul>
+        <li style="color:var(--green);">Project-root CLAUDE.md (re-read from disk)</li>
+        <li style="color:var(--red);">Nested subdirectory CLAUDE.md (NOT re-injected automatically)</li>
+        <li style="color:var(--red);">Conversation history (gets summarized, lossy)</li>
+      </ul>
+    </div>
+  </div>
+  <div class="exam-tip">Keep CLAUDE.md under <b>200 lines</b>. Use @import to split into modules. More specific (directory-level) overrides less specific (user-level).</div>
+</div>
+
+<!-- SLIDE 12: Commands & Skills -->
+<div class="slide" id="s12">
+  <h2>3.2 &mdash; Custom Slash Commands & Skills</h2>
+  <div class="card">
+    <h3>Skills vs. Commands vs. CLAUDE.md Rules</h3>
+    <table>
+      <tr><th>Feature</th><th>Skills (SKILL.md)</th><th>Slash Commands</th><th>CLAUDE.md Rules</th></tr>
+      <tr><td><b>Load timing</b></td><td>On-demand</td><td>On-demand</td><td>Every session</td></tr>
+      <tr><td><b>Context cost</b></td><td>Only when used</td><td>Only when used</td><td>Always loaded</td></tr>
+      <tr><td><b>Invoked by</b></td><td>User or Claude</td><td>User or Claude</td><td>Always present</td></tr>
+      <tr><td><b>Best for</b></td><td>Multi-step procedures</td><td>Same (legacy)</td><td>Facts, rules, conventions</td></tr>
+      <tr><td><b>Frontmatter</b></td><td>Full (context:fork, allowed-tools)</td><td>Limited</td><td>Limited</td></tr>
+    </table>
+  </div>
+  <div class="two-col">
+    <div class="card">
+      <h3>Skill Configuration (SKILL.md)</h3>
+<pre><code>---
+name: code-review
+description: Run standard code review checklist
+allowed-tools: Read,Grep,Glob
+context: fork
+---
+
+Review the code changes using:
+1. Check for security issues
+2. Verify test coverage
+3. Check naming conventions</code></pre>
+      <ul>
+        <li><code>context: fork</code> &mdash; Isolated sub-agent, prevents context pollution. All intermediate state discarded; only final result returns</li>
+        <li><code>allowed-tools</code> &mdash; Restrict tool access (least privilege)</li>
+        <li><code>paths: ["**/*.service.ts"]</code> &mdash; Skill only appears when editing matching files (saves tokens)</li>
+        <li><code>disable-model-invocation</code> &mdash; User-only invocation</li>
+      </ul>
+      <h4>Custom Command Parameterization</h4>
+      <p>Use <code>$ARGUMENTS</code> in command markdown: <code>/generate-endpoint users</code> &rarr; "users" replaces <code>$ARGUMENTS</code></p>
+    </div>
+    <div class="card">
+      <h3>File Locations</h3>
+      <table>
+        <tr><th>Type</th><th>Path</th><th>Shared?</th></tr>
+        <tr><td>Project commands</td><td><code>.claude/commands/</code></td><td>Yes (Git)</td></tr>
+        <tr><td>Personal commands</td><td><code>~/.claude/commands/</code></td><td>No</td></tr>
+        <tr><td>Project skills</td><td><code>.claude/skills/&lt;name&gt;/SKILL.md</code></td><td>Yes (Git)</td></tr>
+        <tr><td>Personal skills</td><td><code>~/.claude/skills/&lt;name&gt;/SKILL.md</code></td><td>No</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="exam-tip"><code>context: fork</code> runs the skill in an <b>isolated sub-agent</b> with its own context, preventing pollution of the main session. This is what the exam means by "forked context".</div>
+</div>
+
+<!-- SLIDE 13: Path-Specific Rules -->
+<div class="slide" id="s13">
+  <h2>3.3 &mdash; Path-Specific Rules & Conditional Loading</h2>
+  <div class="two-col">
+    <div class="card">
+      <h3>How It Works</h3>
+      <p>Rules in <code>.claude/rules/</code> with YAML frontmatter + glob patterns load <b>only when paths match</b>.</p>
+<pre><code># .claude/rules/security.md
+---
+paths:
+  - "src/auth/**/*.py"
+  - "src/payments/**/*.py"
+---
+
+# Security Rules
+- Never log credentials or tokens
+- All inputs must be sanitized
+- Use parameterized queries only</code></pre>
+      <ul>
+        <li>Saves tokens (rules load only when relevant)</li>
+        <li>Improves precision (focused instructions)</li>
+        <li>Triggers on file <b>read</b>, not every tool use</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Glob Patterns</h3>
+      <table>
+        <tr><th>Pattern</th><th>Matches</th></tr>
+        <tr><td><code>**/*.ts</code></td><td>All TypeScript files</td></tr>
+        <tr><td><code>src/**/*</code></td><td>All files under src/</td></tr>
+        <tr><td><code>**/*.test.tsx</code></td><td>All React test files</td></tr>
+        <tr><td><code>src/*.{ts,tsx}</code></td><td>TS & TSX in src/</td></tr>
+      </table>
+      <h4>Loading Rules</h4>
+      <ul>
+        <li><b>No frontmatter</b> = loads at launch (same as CLAUDE.md)</li>
+        <li><b>With paths:</b> = loads when Claude reads matching files</li>
+        <li>Rules without paths can also be in <code>.claude/rules/</code> for organization</li>
+      </ul>
+    </div>
+  </div>
+  <div class="exam-tip">Path-scoped rules with glob frontmatter save tokens AND improve precision vs. a monolithic CLAUDE.md. Rules load only when Claude reads files matching the pattern.</div>
+</div>
+
+<!-- SLIDE 14: Plan Mode -->
+<div class="slide" id="s14">
+  <h2>3.4 &mdash; Plan Mode vs. Direct Execution</h2>
+  <div class="card">
+    <h3>The explore &rarr; plan &rarr; code &rarr; commit Workflow</h3>
+    <div class="flow">
+      <div class="flow-box">Explore</div><span class="flow-arrow">&rarr;</span>
+      <div class="flow-box" style="background:#1e40af">Plan</div><span class="flow-arrow">&rarr;</span>
+      <div class="flow-box" style="background:#15803d">Code</div><span class="flow-arrow">&rarr;</span>
+      <div class="flow-box" style="background:#7c3aed">Commit</div>
+    </div>
+  </div>
+  <div class="two-col">
+    <div class="card">
+      <h3 style="color:var(--accent);">Use Plan Mode When:</h3>
+      <ul>
+        <li>Complex multi-file refactors (8+ files)</li>
+        <li>Architectural decisions needed</li>
+        <li>You want to review before execution</li>
+        <li>Interconnected changes with dependencies</li>
+        <li>Learning what Claude would do</li>
+      </ul>
+      <h4>Activation Methods</h4>
+      <ul>
+        <li><b>Shift+Tab</b> twice (interactive toggle; Alt+M on Windows)</li>
+        <li><code>/plan</code> at the prompt</li>
+        <li><code>--permission-mode plan</code> (CLI flag)</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3 style="color:var(--green);">Use Direct Execution When:</h3>
+      <ul>
+        <li>Quick bug fixes</li>
+        <li>Single-file changes</li>
+        <li>Trusted, well-understood operations</li>
+      </ul>
+      <h4>Plan Mode Tool Permissions</h4>
+      <table>
+        <tr><td style="color:var(--green);"><b>Allowed</b></td><td>Read, LS, Glob, Grep, WebSearch, WebFetch, TodoRead, TodoWrite</td></tr>
+        <tr><td style="color:var(--red);"><b>Blocked</b></td><td>Edit, MultiEdit, Write, Bash execution</td></tr>
+      </table>
+      <h4>Explore Subagent</h4>
+      <p>Built-in subagent that skips CLAUDE.md and git status for a <b>small context footprint</b>.</p>
+    </div>
+  </div>
+  <div class="exam-tip">For a complex refactor touching 8+ files, always use <b>Plan Mode</b> first. Plan mode allows read-only tools but <b>blocks all writes</b>. The Explore subagent is for discovery with minimal context.</div>
+</div>
+
+<!-- SLIDE 15: CI/CD & Iterative -->
+<div class="slide" id="s15">
+  <h2>3.5 &mdash; Iterative Refinement & CI/CD Integration</h2>
+  <div class="two-col">
+    <div class="card">
+      <h3>Iterative Refinement Techniques</h3>
+      <h4>Test-Driven Development (TDD)</h4>
+      <ol>
+        <li>Write failing tests first</li>
+        <li>Ask Claude to make them pass</li>
+        <li>Iterate until green</li>
+      </ol>
+      <h4>Interview-Style Prompting</h4>
+      <ul>
+        <li>Clarify requirements before execution</li>
+        <li>Ask Claude to propose, then refine</li>
+        <li>Give concrete input/output examples</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>CI/CD Integration</h3>
+      <h4>Headless Mode Flags</h4>
+<pre><code># Run in CI pipeline
+claude -p "review this PR" \
+  --output-format json \
+  --max-turns 5
+
+# Pipe content for analysis
+git diff HEAD~1 | claude -p "review changes"</code></pre>
+      <h4>Key Flags</h4>
+      <table>
+        <tr><td><code>-p</code></td><td>Non-interactive (headless) mode</td></tr>
+        <tr><td><code>--output-format json</code></td><td>Structured JSON output (print mode only)</td></tr>
+        <tr><td><code>--max-turns N</code></td><td>Limit agentic turns (print mode only)</td></tr>
+        <tr><td><code>--allowedTools</code></td><td>Whitelist tools (e.g., <code>"Read,Grep,Glob"</code>)</td></tr>
+        <tr><td><code>--disallowedTools</code></td><td>Blacklist tools (e.g., <code>"Edit,Write"</code>)</td></tr>
+      </table>
+      <h4>Official GitHub Action</h4>
+      <pre><code>- uses: anthropics/claude-code-action@v1</code></pre>
+      <p>Handles GitHub context, comments, PRs automatically</p>
+    </div>
+  </div>
+  <div class="exam-tip">The <code>-p</code> flag enables <b>non-interactive mode</b> for CI/CD. Use <code>--allowedTools</code> to restrict to read-only tools for safety. Combined with <code>--output-format json</code>, you can parse results programmatically.</div>
+</div>
+
+<!-- SLIDE 16: Explicit Criteria -->
+<div class="slide" id="s16">
+  <h2>4.1 &mdash; Explicit Criteria & Precision Prompting</h2>
+  <div class="two-col">
+    <div class="card">
+      <h3>Vague vs. Explicit Prompts</h3>
+      <div style="color:var(--red);margin-bottom:10px;">
+        <b>Vague:</b> "Decide the moderation action: remove, review, or allow."
+      </div>
+      <div style="color:var(--green);">
+        <b>Explicit:</b>
+      </div>
+<pre><code>Choose the action using these exact definitions:
+- REMOVE: clear, unambiguous violation - doxxing,
+  credible threat, clearly illegal content.
+- REVIEW: may violate policy but needs a human -
+  likely spam, borderline harassment.
+- ALLOW: rude/blunt/off-topic but not a violation.
+
+Tie-break: when unsure between REMOVE and REVIEW,
+choose REVIEW.</code></pre>
+    </div>
+    <div class="card">
+      <h3>Why This Matters</h3>
+      <ul>
+        <li>Vague "remove" leaves the label <b>undefined</b> &mdash; model over-fires, creating <b>false positives</b></li>
+        <li>Explicit criteria + tie-break rule pull false positives back down on the <b>same model</b></li>
+        <li>Three layers of precision:
+          <ol>
+            <li><b>Criteria</b> fix the decision (what each label means)</li>
+            <li><b>Few-shot examples</b> fix the format (exact output shape)</li>
+            <li><b>Principles</b> fix the intent (how to generalize)</li>
+          </ol>
+        </li>
+      </ul>
+    </div>
+  </div>
+  <div class="exam-tip">Define each label with <b>concrete, testable boundaries</b> before applying it. Include a <b>tie-break rule</b> for ambiguous cases. This cuts false positives without fine-tuning.</div>
+</div>
+
+<!-- SLIDE 17: Few-Shot -->
+<div class="slide" id="s17">
+  <h2>4.2 &mdash; Few-Shot Prompting & Generalization</h2>
+  <div class="two-col">
+    <div class="card">
+      <h3>Few-Shot Examples</h3>
+      <p>Supply a few labeled samples that fix the exact output format more reliably than instructions alone.</p>
+<pre><code>&lt;examples&gt;
+&lt;example&gt;
+Report: "User posted home address of ex-partner"
+Output: REMOVE | Doxxing - exposure of private
+  personal data with apparent intent to harm.
+&lt;/example&gt;
+&lt;example&gt;
+Report: "Threatening to crash the server"
+Output: REVIEW | Ambiguous threat - likely
+  refers to software, not physical harm.
+&lt;/example&gt;
+&lt;example&gt;
+Report: "This product is absolute garbage"
+Output: ALLOW | Blunt criticism, not a
+  policy violation.
+&lt;/example&gt;
+&lt;/examples&gt;</code></pre>
+    </div>
+    <div class="card">
+      <h3>Generalization Principles</h3>
+      <p>Add a short statement of <b>intent</b> so the model handles unseen, context-heavy edge cases.</p>
+<pre><code>PRINCIPLES:
+- Protect people from real harm, not from
+  uncomfortable opinions.
+- Context matters: "I'll kill it" about code
+  is not a threat.
+- Public figures have higher threshold for
+  criticism than private individuals.
+- When in doubt, REVIEW - don't REMOVE.</code></pre>
+      <h4>Why All Three Together?</h4>
+      <ul>
+        <li>Criteria without format &rarr; right answers, parser can't read</li>
+        <li>Examples without intent &rarr; over-fit to shown cases</li>
+        <li>Together = accurate, machine-readable, robust to unseen</li>
+      </ul>
+    </div>
+  </div>
+  <div class="exam-tip">Use <b>3-5 diverse examples</b> wrapped in <code>&lt;example&gt;</code> tags. Show the exact output format. Add a principles block for generalization beyond the examples.</div>
+</div>
+
+<!-- SLIDE 18: Structured Output -->
+<div class="slide" id="s18">
+  <h2>4.3 &mdash; Structured Output & Validation</h2>
+  <div class="two-col">
+    <div class="card">
+      <h3>Tool Schema for Structured Output</h3>
+      <p>Use tool definitions to force Claude to return structured data:</p>
+<pre><code>tools = [{
+  "name": "classify_content",
+  "description": "Classify content moderation action",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "action": {
+        "type": "string",
+        "enum": ["REMOVE", "REVIEW", "ALLOW"]
+      },
+      "rationale": {
+        "type": "string",
+        "description": "One-sentence justification"
+      },
+      "confidence": {
+        "type": "number",
+        "minimum": 0, "maximum": 100
+      }
+    },
+    "required": ["action", "rationale", "confidence"]
+  }
+}]
+
+# Force this specific tool
+tool_choice = {"type": "tool", "name": "classify_content"}</code></pre>
+    </div>
+    <div class="card">
+      <h3>Validation & Retry Loop</h3>
+<pre><code>MAX_RETRIES = 3
+for attempt in range(MAX_RETRIES):
+    response = client.messages.create(
+        tools=tools,
+        tool_choice={"type":"tool","name":"classify"},
+        messages=messages
+    )
+    result = response.content[0].input
+
+    # Validate
+    if validate_schema(result):
+        return result
+
+    # Add error feedback and retry
+    messages.append({"role":"user","content":
+        f"Invalid output: {error}. Please retry."
+    })
+
+raise ValueError("Failed after retries")</code></pre>
+      <h4>Key Pattern</h4>
+      <ul>
+        <li>Use tool schema to define expected output</li>
+        <li>Force tool with <code>tool_choice</code></li>
+        <li>Validate result against schema</li>
+        <li>Retry with error feedback if invalid</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 19: Batch API -->
+<div class="slide" id="s19">
+  <h2>4.4 &mdash; Batch API & Multipass Processing</h2>
+  <div class="two-col">
+    <div class="card">
+      <h3>Message Batches API</h3>
+      <ul>
+        <li><b>50% cost reduction</b> on ALL token types (input, output, cache reads, cache writes, thinking)</li>
+        <li>Up to <b>100,000 requests</b> or <b>256 MB</b> per batch</li>
+        <li>SLA: 24 hours (practice: typically 5-30 min)</li>
+        <li>Each request processed <b>independently</b></li>
+        <li>Failure of one request does NOT affect others</li>
+        <li>Order NOT guaranteed &mdash; use meaningful <code>custom_id</code></li>
+        <li><b>Stacks with prompt caching:</b> 50% batch + 90% cache = <b>up to 95% savings</b></li>
+      </ul>
+      <h4>Use Cases</h4>
+      <ul>
+        <li>Large-scale evaluations</li>
+        <li>Content moderation at scale</li>
+        <li>Bulk data analysis</li>
+        <li>NOT for real-time interactions</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Multipass Pattern</h3>
+      <p>Run Claude over the same input multiple times and compare/aggregate results:</p>
+<pre><code># Pass 1: Initial classification
+result1 = classify(content)
+
+# Pass 2: Verification with different prompt
+result2 = verify(content, result1)
+
+# Pass 3: Confidence calibration
+if result1 != result2:
+    result3 = arbitrate(content, result1, result2)
+    final = result3
+else:
+    final = result1  # High confidence</code></pre>
+      <h4>When to Use Multipass</h4>
+      <ul>
+        <li>High-stakes decisions (moderation, medical)</li>
+        <li>When single-pass accuracy isn't sufficient</li>
+        <li>Combine with batching for cost efficiency</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 20: Context Preservation -->
+<div class="slide" id="s20">
+  <h2>5.1 &mdash; Context Preservation & Optimization</h2>
+  <div class="two-col">
+    <div class="card">
+      <h3>The Problem</h3>
+      <p>Long conversations lose details (numbers, dates, IDs). After auto-compact, nuance disappears.</p>
+      <h3>Case Facts Block</h3>
+      <p>A persistent structured block that keeps critical details alive across turns:</p>
+<pre><code># CASE FACTS (do not remove)
+- Customer: Jane Doe (ID: CUST-4421)
+- Order: NP-100190
+- Issue: Return request for boots
+- Account Tier: Enterprise
+- SLA: 4-hour response</code></pre>
+      <ul>
+        <li>Place at start or end of context (primacy/recency effect)</li>
+        <li>Write to file to survive /compact</li>
+        <li>Keep it small and high-signal</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Trimming Tool Outputs</h3>
+      <ul>
+        <li>Summarize a 500-row query into the 5 relevant fields</li>
+        <li>Return only fields Claude needs for next step</li>
+        <li>Use semantic identifiers (slugs, UUIDs) not opaque refs</li>
+        <li>MCP output limit: 25,000 tokens (warning at 10,000)</li>
+      </ul>
+      <h3>Context Placement</h3>
+      <table>
+        <tr><th>Position</th><th>Effect</th></tr>
+        <tr><td>Start of context</td><td>Primacy effect &mdash; high recall</td></tr>
+        <tr><td>End of context</td><td>Recency effect &mdash; high recall</td></tr>
+        <tr><td>Middle of context</td><td>"Lost in the middle" &mdash; lower recall</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="exam-tip">Keep critical info at the <b>start or end</b> of context (primacy/recency). Write case facts to a file so they survive <code>/compact</code>.</div>
+</div>
+
+<!-- SLIDE 21: Escalation -->
+<div class="slide" id="s21">
+  <h2>5.2 &mdash; Escalation & Ambiguity Resolution</h2>
+  <div class="two-col">
+    <div class="card">
+      <h3>When to Escalate</h3>
+      <ul>
+        <li><b>Always</b> when the user explicitly asks &mdash; no exceptions</li>
+        <li>On policy gaps (no clear rule applies)</li>
+        <li>When stuck or can't proceed</li>
+        <li>When two readings are equally plausible</li>
+        <li>Low confidence in the answer</li>
+      </ul>
+      <h3>Golden Rule</h3>
+      <p style="color:var(--primary);font-size:1.2em;font-weight:bold;">Request clarification instead of guessing.</p>
+    </div>
+    <div class="card">
+      <h3>Structured Escalation Handoff</h3>
+<pre><code>{
+  "customer_id": "CUST-4421",
+  "issue_summary": "Billing dispute on order NP-100190",
+  "root_cause": "Double charge during system outage",
+  "attempted_resolution": "Verified charge, found duplicate",
+  "recommended_actions": [
+    "Issue refund for duplicate charge",
+    "Apply 10% courtesy credit"
+  ],
+  "confidence": 45,
+  "escalation_reason": "Policy unclear on auto-refund threshold"
+}</code></pre>
+      <p>Include: customer ID, issue summary, root cause, attempted resolution, recommended actions, and why escalated.</p>
+    </div>
+  </div>
+  <div class="warning">A structured escalation with defined fields (ID, summary, root cause, recommended actions) is ALWAYS better than passing just the customer ID or an unstructured text summary.</div>
+</div>
+
+<!-- SLIDE 22: Error Propagation -->
+<div class="slide" id="s22">
+  <h2>5.3 &mdash; Error Propagation in Multi-Agent Systems</h2>
+  <div class="two-col">
+    <div class="card">
+      <h3>Structured Error Types</h3>
+<pre><code># Propagate structured errors with:
+# - error type (what went wrong)
+# - partial results (what succeeded)
+# - alternatives (what to try next)
+
+{
+  "isError": True,
+  "errorType": "timeout",
+  "partialResults": {"classified": True, "enriched": False},
+  "alternatives": ["retry_with_cache", "skip_enrichment"],
+  "isRetryable": True
+}</code></pre>
+    </div>
+    <div class="card">
+      <h3>Retry-Local Pattern</h3>
+      <ul>
+        <li>Subagents retry <b>locally</b> (handle transient errors internally)</li>
+        <li>Only send <b>unresolved errors</b> up to coordinator</li>
+        <li>Coordinator decides: retry subagent, try alternative, or fail gracefully</li>
+      </ul>
+      <h4>Critical Distinction</h4>
+      <table>
+        <tr><th>Scenario</th><th>Is Error?</th><th>Action</th></tr>
+        <tr><td>Timeout (503)</td><td>Yes, retryable</td><td>Retry with backoff</td></tr>
+        <tr><td>Not Found (404)</td><td>Yes, NOT retryable</td><td>Stop, report</td></tr>
+        <tr><td>Empty results</td><td><b>NO</b></td><td>Valid response, proceed</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="warning">A timeout is an infrastructure error (retry). "No data found" is a valid result (don't retry). Subagents should silently retry transient errors; only propagate unresolved failures.</div>
+</div>
+
+<!-- SLIDE 23: Large Codebase -->
+<div class="slide" id="s23">
+  <h2>5.4 &mdash; Large Codebase Exploration & Session Management</h2>
+  <div class="card-grid">
+    <div class="card">
+      <h3>Strategies for Long Sessions</h3>
+      <ul>
+        <li><b>Scratchpad files</b>: Write findings to disk so they survive compaction</li>
+        <li><b>Subagents</b>: Isolate exploration to prevent context flood</li>
+        <li><b>/compact</b>: Manually trim context. Run at <b>~60% capacity</b>, not 95%. Accepts custom prompt for targeted curation</li>
+        <li><b>State export</b>: Save progress for crash recovery</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Exploration Strategy</h3>
+      <div class="flow">
+        <div class="flow-box">Grep entry points</div><span class="flow-arrow">&rarr;</span>
+        <div class="flow-box">Read key files</div><span class="flow-arrow">&rarr;</span>
+        <div class="flow-box">Follow imports</div><span class="flow-arrow">&rarr;</span>
+        <div class="flow-box">Note in scratchpad</div>
+      </div>
+      <p>Don't read everything. Use targeted search, then incremental reads.</p>
+    </div>
+    <div class="card">
+      <h3>Crash Recovery &mdash; --resume vs --continue</h3>
+      <table>
+        <tr><th>Flag</th><th>Behavior</th><th>Use When</th></tr>
+        <tr><td><code>--resume &lt;id&gt;</code></td><td>Resume specific session by ID</td><td>CI/CD, automation (capture from <code>session_id</code>)</td></tr>
+        <tr><td><code>--continue</code></td><td>Resume most recent session in current directory</td><td>Daily focused work on single project</td></tr>
+      </table>
+      <p>Sessions stored at <code>~/.claude/projects/</code> as JSONL.</p>
+      <div class="warning"><b>Resume trade-off:</b> Resuming loads the full prior conversation into context. If the prior session was long, you start with most of the context budget used. A <b>fresh session with a summary</b> gives a clean context window.</div>
+    </div>
+  </div>
+  <div class="exam-tip">When context degrades (generic responses instead of specifics), <b>summarize findings</b>, then <b>spawn a subagent</b> for the next exploration with that summary as initial context.</div>
+</div>
+
+<!-- SLIDE 24: Human Review -->
+<div class="slide" id="s24">
+  <h2>5.5 &mdash; Human Review & Confidence Calibration</h2>
+  <div class="two-col">
+    <div class="card">
+      <h3>Confidence-Based Routing</h3>
+<pre><code>def route_decision(result, threshold=70):
+    if result["confidence"] >= threshold:
+        return auto_approve(result)
+    else:
+        return request_human_review(result)
+
+# Per-field confidence
+{
+  "name":     {"value": "John Doe", "confidence": 95},
+  "birthdate":{"value": "1985-03-15","confidence": 60},
+  "address":  {"value": "123 Main St","confidence": 40}
+}
+# Only review low-confidence fields</code></pre>
+    </div>
+    <div class="card">
+      <h3>Stratified Sampling</h3>
+      <p>Don't rely on aggregate accuracy. Evaluate <b>per field</b> and <b>per document type</b>.</p>
+      <ul>
+        <li>Sample from each confidence stratum (high/medium/low)</li>
+        <li>Detect if "high confidence" is actually accurate</li>
+        <li>Find edge cases in all ranges</li>
+        <li>Validate calibration (is 90% confidence really 90% accurate?)</li>
+      </ul>
+      <h4>Evaluation Tiers</h4>
+      <table>
+        <tr><td>90-100</td><td>Auto-approve, spot-check 5%</td></tr>
+        <tr><td>70-89</td><td>Light review, sample 20%</td></tr>
+        <tr><td>50-69</td><td>Full human review</td></tr>
+        <tr><td>&lt;50</td><td>Always escalate to human</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 25: Provenance -->
+<div class="slide" id="s25">
+  <h2>5.6 &mdash; Information Provenance & Uncertainty Handling</h2>
+  <div class="two-col">
+    <div class="card">
+      <h3>Claim-Source Mapping</h3>
+      <p>Map every claim to its source (URL, doc name, evidence excerpt).</p>
+<pre><code>{
+  "claim": "30-day return window applies",
+  "sources": [
+    {
+      "document": "returns-policy.md",
+      "excerpt": "Items may be returned within 30 days",
+      "publication_date": "2024-01-15"
+    }
+  ],
+  "confidence": 95,
+  "status": "confirmed"
+}</code></pre>
+      <h4>Citation Types</h4>
+      <ul>
+        <li><code>document_citation</code> &mdash; From uploaded documents</li>
+        <li><code>web_search_result_location_citation</code> &mdash; From web search</li>
+        <li>Always include <code>quoted_text</code> for verification</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Handling Conflicting Sources</h3>
+      <ul>
+        <li>Keep conflicting info from multiple sources &mdash; <b>don't pick one</b></li>
+        <li>Always include <b>publication dates</b> for temporal context</li>
+        <li>Flag where sources disagree for reviewer attention</li>
+      </ul>
+      <h4>Confirmed vs. Contested Report</h4>
+<pre><code>## Confirmed Findings
+- 30-day return window [Source A, Source B]
+- Free shipping over $50 [Source A]
+
+## Contested Findings
+- Refund processing time:
+  - Source A (2024-06): "3-5 business days"
+  - Source B (2023-11): "7-10 business days"
+  - Note: Source A is more recent
+
+## Unverified (Single Source)
+- Holiday return extension [Source C only]</code></pre>
+    </div>
+  </div>
+  <div class="exam-tip">Never silently pick one conflicting source. Present <b>both</b> with publication dates and let the reviewer decide. Distinguish confirmed, contested, and single-source claims.</div>
+</div>
+
+<!-- SLIDE 26: Hooks -->
+<div class="slide" id="s26">
+  <h2>B.1 &mdash; Hooks System Deep Dive</h2>
+  <div class="two-col">
+    <div class="card">
+      <h3>Hook Events</h3>
+      <table>
+        <tr><th>Event</th><th>When</th><th>Use Case</th></tr>
+        <tr><td><code>PreToolUse</code></td><td>Before tool executes</td><td>Validate, block dangerous ops</td></tr>
+        <tr><td><code>PostToolUse</code></td><td>After tool succeeds</td><td>Log, validate results, enforce ordering</td></tr>
+        <tr><td><code>UserPromptSubmit</code></td><td>Before Claude processes</td><td>Filter input, add context</td></tr>
+        <tr><td><code>Stop</code></td><td>Claude finishes responding</td><td>Post-processing, notifications</td></tr>
+        <tr><td><code>SessionStart</code></td><td>Session begins</td><td>Setup, environment checks</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <h3>Configuration in settings.json</h3>
+<pre><code>{
+  "hooks": {
+    "PreToolUse": [{
+      "matcher": "Bash",
+      "hooks": [{
+        "type": "command",
+        "command": "validate-command.sh"
+      }]
+    }],
+    "PostToolUse": [{
+      "matcher": "Edit|Write",
+      "hooks": [{
+        "type": "command",
+        "command": "lint-check.sh"
+      }]
+    }]
+  }
+}</code></pre>
+      <h4>Exit Code Behavior</h4>
+      <table>
+        <tr><th>Exit Code</th><th>Effect</th></tr>
+        <tr><td><code>0</code></td><td>Success &mdash; tool proceeds normally</td></tr>
+        <tr><td><code>1</code></td><td>General error &mdash; logged as warning</td></tr>
+        <tr><td><code>2</code></td><td><b>Block operation</b> &mdash; tool is prevented from executing, stderr sent to Claude as feedback</td></tr>
+      </table>
+      <h4>Hook Locations</h4>
+      <ul>
+        <li><code>~/.claude/settings.json</code> (all projects)</li>
+        <li><code>.claude/settings.json</code> (project, Git)</li>
+        <li><code>.claude/settings.local.json</code> (project, local)</li>
+      </ul>
+    </div>
+  </div>
+  <div class="exam-tip"><code>PreToolUse</code> hooks with <b>exit code 2</b> are the way to <b>block</b> dangerous operations. Exit code 1 does NOT block &mdash; only exit code 2 blocks and sends stderr to Claude as feedback. <code>PostToolUse</code> hooks enforce ordering (verify prerequisites were called).</div>
+</div>
+
+<!-- SLIDE 27: Cheat Sheet -->
+<div class="slide" id="s27">
+  <h2>B.2 &mdash; Quick Reference Cheat Sheet</h2>
+  <div class="three-col">
+    <div class="card">
+      <h3>CLI Flags</h3>
+      <table>
+        <tr><td><code>-p</code></td><td>Headless / CI mode</td></tr>
+        <tr><td><code>-c</code></td><td>Continue most recent session</td></tr>
+        <tr><td><code>-r ID</code></td><td>Resume specific session</td></tr>
+        <tr><td><code>--output-format json</code></td><td>JSON output (print mode)</td></tr>
+        <tr><td><code>--max-turns N</code></td><td>Limit turns (print mode)</td></tr>
+        <tr><td><code>--allowedTools</code></td><td>Whitelist tools</td></tr>
+        <tr><td><code>--disallowedTools</code></td><td>Blacklist tools</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <h3>Slash Commands</h3>
+      <table>
+        <tr><td><code>/compact</code></td><td>Trim context</td></tr>
+        <tr><td><code>/memory</code></td><td>View/edit CLAUDE.md</td></tr>
+        <tr><td><code>/mcp</code></td><td>MCP server status</td></tr>
+        <tr><td><code>/context</code></td><td>Loaded files & usage</td></tr>
+        <tr><td><code>/init</code></td><td>Generate CLAUDE.md</td></tr>
+        <tr><td><code>/doctor</code></td><td>Trim suggestions</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <h3>Key Patterns</h3>
+      <table>
+        <tr><td>Agentic Loop</td><td>Check <code>stop_reason</code>, not text</td></tr>
+        <tr><td>Hub-Spoke</td><td>Coordinator + isolated subagents</td></tr>
+        <tr><td>Strong Tools</td><td>Name + Desc + Schema</td></tr>
+        <tr><td>Error Envelope</td><td><code>isError</code> + <code>isRetryable</code></td></tr>
+        <tr><td>Hook Block</td><td>Exit code <b>2</b> (NOT 1)</td></tr>
+        <tr><td>Escalation</td><td>Structured handoff fields</td></tr>
+        <tr><td>Provenance</td><td>Claim-source mapping</td></tr>
+        <tr><td>Prompt Chain</td><td>Fixed sequential workflow</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="card" style="margin-top:15px;">
+    <h3>File Location Quick Reference</h3>
+    <table>
+      <tr><th>What</th><th>Project (Shared)</th><th>Personal</th></tr>
+      <tr><td>Config</td><td><code>.claude/CLAUDE.md</code></td><td><code>~/.claude/CLAUDE.md</code></td></tr>
+      <tr><td>Local config</td><td><code>CLAUDE.local.md</code></td><td>&mdash;</td></tr>
+      <tr><td>Commands</td><td><code>.claude/commands/</code></td><td><code>~/.claude/commands/</code></td></tr>
+      <tr><td>Skills</td><td><code>.claude/skills/</code></td><td><code>~/.claude/skills/</code></td></tr>
+      <tr><td>Rules</td><td><code>.claude/rules/</code></td><td><code>~/.claude/rules/</code></td></tr>
+      <tr><td>Settings</td><td><code>.claude/settings.json</code></td><td><code>~/.claude/settings.json</code></td></tr>
+      <tr><td>MCP</td><td><code>.mcp.json</code></td><td><code>~/.claude/mcp-config.json</code></td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="slide-number" id="slideNum">1 / 28</div>
+
+<div class="nav">
+  <button onclick="prev()">&#9664; Prev</button>
+  <button onclick="goTo(1)">TOC</button>
+  <button onclick="next()">Next &#9654;</button>
+</div>
+
+<script>
+let current = 0;
+const slides = document.querySelectorAll('.slide');
+const total = slides.length;
+
+function show(n) {
+  slides[current].classList.remove('active');
+  current = Math.max(0, Math.min(n, total - 1));
+  slides[current].classList.add('active');
+  document.getElementById('slideNum').textContent = (current + 1) + ' / ' + total;
+  window.scrollTo(0, 0);
+}
+function next() { show(current + 1); }
+function prev() { show(current - 1); }
+function goTo(n) { show(n); }
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); next(); }
+  if (e.key === 'ArrowLeft') { e.preventDefault(); prev(); }
+  if (e.key === 'Home') { e.preventDefault(); show(0); }
+  if (e.key === 'End') { e.preventDefault(); show(total - 1); }
+});
+</script>
+</body>
+</html>
