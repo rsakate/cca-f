@@ -1614,6 +1614,66 @@ const QUESTIONS = [
   correct:0,
   explanation:"The Batch API's 50% discount stacks with prompt caching's 90% discount on cache reads. For workloads with high cache hit rates (common in batch processing where many requests share the same system prompt), this combination can save up to 95%. The 50% applies to ALL token types: input, output, cache reads, cache writes, and thinking tokens."
 },
+{
+  id:111, module:4, scenario:"Temperature Configuration",
+  text:"What is the valid temperature range for Claude models, and what is the default value?",
+  options:[
+    "Range 0.0–1.0, default 1.0",
+    "Range 0.0–2.0, default 1.0",
+    "Range 0.0–1.0, default 0.7",
+    "Range 0.0–2.0, default 0.5"
+  ],
+  correct:0,
+  explanation:"Claude's temperature parameter ranges from 0.0 to 1.0 (unlike OpenAI which goes up to 2.0). The default is 1.0, meaning maximum randomness is used by default. This is a key difference to remember — Claude's range is narrower than OpenAI's."
+},
+{
+  id:112, module:4, scenario:"Temperature Configuration",
+  text:"A developer sets <code>temperature: 0</code> in their Claude API call and expects perfectly deterministic output. Is this assumption correct?",
+  options:[
+    "No — temperature 0 does NOT guarantee deterministic output due to floating-point arithmetic and MoE architecture",
+    "Yes — temperature 0 always produces identical output for the same input",
+    "Yes — but only when combined with a fixed random seed parameter",
+    "No — temperature 0 is not a valid value in the Claude API"
+  ],
+  correct:0,
+  explanation:"Temperature 0 is near-deterministic but NOT fully deterministic. Floating-point arithmetic across different hardware and Mixture-of-Experts (MoE) routing can produce slight variations. There is no random seed parameter in the Claude API. This is a common misconception tested in exams."
+},
+{
+  id:113, module:4, scenario:"Temperature Configuration",
+  text:"You're building a medical data extraction pipeline that needs maximum precision. A colleague suggests setting both <code>temperature: 0.1</code> and <code>top_p: 0.1</code> together. What is the best practice?",
+  options:[
+    "Alter temperature OR top_p, but NOT both simultaneously",
+    "Setting both is recommended for maximum precision",
+    "Use top_k instead, which is more precise than either",
+    "Both parameters are deprecated; use the effort parameter instead"
+  ],
+  correct:0,
+  explanation:"Anthropic's best practice is to alter temperature OR top_p, but NOT both at the same time. Setting both can lead to unpredictable interactions between the two sampling mechanisms. For extraction tasks, set temperature low (0.0–0.3) and leave top_p at its default."
+},
+{
+  id:114, module:4, scenario:"Temperature Configuration",
+  text:"Which sampling parameter is <strong>NOT</strong> available in the native Claude API?",
+  options:[
+    "<code>top_k</code> — only available via Vertex AI or Bedrock",
+    "<code>top_p</code> — only available via Vertex AI or Bedrock",
+    "<code>temperature</code> — only available via Vertex AI or Bedrock",
+    "<code>max_tokens</code> — only available via Vertex AI or Bedrock"
+  ],
+  correct:0,
+  explanation:"top_k is NOT available in the native Claude API (api.anthropic.com). It is only accessible when using Claude through Google Vertex AI or AWS Bedrock. The native API supports temperature, top_p, and max_tokens."
+},
+{
+  id:115, module:4, scenario:"Temperature Configuration",
+  text:"On Claude Opus 4.7 and later models, what replaces the temperature parameter for controlling output behavior?",
+  options:[
+    "The <code>effort</code> parameter with values low, medium, and high",
+    "The <code>creativity</code> parameter with values 0.0–1.0",
+    "The <code>sampling_mode</code> parameter with values greedy and stochastic",
+    "Temperature is NOT deprecated and still works the same way"
+  ],
+  correct:0,
+  explanation:"Starting with Claude Opus 4.7, the temperature parameter is deprecated and replaced by the effort parameter, which accepts three values: low, medium, and high. This represents a shift from fine-grained numerical control to a simpler categorical approach."
+},
 ];
 
 // ============================================================

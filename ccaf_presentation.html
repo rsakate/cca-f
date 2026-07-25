@@ -78,7 +78,7 @@
     <h1 style="font-size:3.5em;margin-bottom:5px;">CCA-F</h1>
     <p style="font-size:1.6em;color:var(--accent);margin-bottom:30px;">Claude Certified Architect &mdash; Foundations</p>
     <p style="font-size:1.2em;color:var(--text-muted);">Complete Exam Study Guide</p>
-    <p style="color:var(--text-muted);margin-top:10px;">5 Modules &bull; 30 Sections &bull; All Exam Topics</p>
+    <p style="color:var(--text-muted);margin-top:10px;">5 Modules &bull; 31 Sections &bull; All Exam Topics</p>
     <div style="margin-top:40px;">
       <div style="display:flex;gap:15px;justify-content:center;flex-wrap:wrap;">
         <span class="badge badge-api" style="font-size:1em;padding:6px 14px;">Claude API</span>
@@ -125,20 +125,21 @@
         <li onclick="goTo(17)"><span class="module-num">4.2</span> Few-Shot & Generalization</li>
         <li onclick="goTo(18)"><span class="module-num">4.3</span> Structured Output & Validation</li>
         <li onclick="goTo(19)"><span class="module-num">4.4</span> Batch API & Multipass</li>
+        <li onclick="goTo(20)"><span class="module-num">4.5</span> Temperature & Sampling Parameters</li>
       </ul>
       <h3>Module 5: Context & Reliability</h3>
       <ul class="toc">
-        <li onclick="goTo(20)"><span class="module-num">5.1</span> Context Preservation & Optimization</li>
-        <li onclick="goTo(21)"><span class="module-num">5.2</span> Escalation & Ambiguity Resolution</li>
-        <li onclick="goTo(22)"><span class="module-num">5.3</span> Error Propagation in Multi-Agent</li>
-        <li onclick="goTo(23)"><span class="module-num">5.4</span> Large Codebase Exploration</li>
-        <li onclick="goTo(24)"><span class="module-num">5.5</span> Human Review & Confidence</li>
-        <li onclick="goTo(25)"><span class="module-num">5.6</span> Information Provenance</li>
+        <li onclick="goTo(21)"><span class="module-num">5.1</span> Context Preservation & Optimization</li>
+        <li onclick="goTo(22)"><span class="module-num">5.2</span> Escalation & Ambiguity Resolution</li>
+        <li onclick="goTo(23)"><span class="module-num">5.3</span> Error Propagation in Multi-Agent</li>
+        <li onclick="goTo(24)"><span class="module-num">5.4</span> Large Codebase Exploration</li>
+        <li onclick="goTo(25)"><span class="module-num">5.5</span> Human Review & Confidence</li>
+        <li onclick="goTo(26)"><span class="module-num">5.6</span> Information Provenance</li>
       </ul>
       <h3>Bonus</h3>
       <ul class="toc">
-        <li onclick="goTo(26)"><span class="module-num">B.1</span> Hooks System Deep Dive</li>
-        <li onclick="goTo(27)"><span class="module-num">B.2</span> Quick Reference Cheat Sheet</li>
+        <li onclick="goTo(27)"><span class="module-num">B.1</span> Hooks System Deep Dive</li>
+        <li onclick="goTo(28)"><span class="module-num">B.2</span> Quick Reference Cheat Sheet</li>
       </ul>
     </div>
   </div>
@@ -971,8 +972,52 @@ else:
   </div>
 </div>
 
-<!-- SLIDE 20: Context Preservation -->
+<!-- SLIDE 20: Temperature & Sampling Parameters -->
 <div class="slide" id="s20">
+  <h2>4.5 &mdash; Temperature & Sampling Parameters</h2>
+  <div class="two-col">
+    <div class="card">
+      <h3>Temperature</h3>
+      <ul>
+        <li><b>Range: 0.0 &ndash; 1.0</b> for Claude (OpenAI uses 0&ndash;2.0)</li>
+        <li><b>Default: 1.0</b> (maximum randomness by default)</li>
+        <li>Controls randomness via softmax scaling of token logits</li>
+        <li><b>Low (0.0&ndash;0.3):</b> Classification, data extraction, code generation, math</li>
+        <li><b>High (0.7&ndash;1.0):</b> Creative writing, brainstorming, diverse outputs</li>
+        <li class="exam-tip">&rarr; <code>temperature: 0</code> does <b>NOT</b> guarantee deterministic output (floating-point math, MoE architecture)</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>top_p &amp; top_k</h3>
+      <ul>
+        <li><b>top_p</b> (nucleus sampling): considers tokens whose cumulative probability &le; p</li>
+        <li><b>top_k:</b> NOT available in native Claude API (only via Vertex AI / Bedrock)</li>
+        <li class="exam-tip">&rarr; Alter temperature <b>OR</b> top_p, <b>NOT both</b> simultaneously</li>
+      </ul>
+      <h3>Deprecation (Opus 4.7+)</h3>
+      <ul>
+        <li>Temperature is <b>deprecated</b> on Claude Opus 4.7+</li>
+        <li>Replaced by <code>effort</code> parameter: <code>low</code> | <code>medium</code> | <code>high</code></li>
+      </ul>
+    </div>
+  </div>
+<pre><code># Low temperature — precise, factual tasks
+response = client.messages.create(
+    model="claude-sonnet-4-6",
+    temperature=0.0,
+    messages=[{"role": "user", "content": "Extract the date: 'Meeting on Jan 15'"}]
+)
+
+# High temperature — creative, diverse outputs
+response = client.messages.create(
+    model="claude-sonnet-4-6",
+    temperature=0.9,
+    messages=[{"role": "user", "content": "Write a tagline for a coffee brand"}]
+)</code></pre>
+</div>
+
+<!-- SLIDE 21: Context Preservation -->
+<div class="slide" id="s21">
   <h2>5.1 &mdash; Context Preservation & Optimization</h2>
   <div class="two-col">
     <div class="card">
@@ -1013,7 +1058,7 @@ else:
 </div>
 
 <!-- SLIDE 21: Escalation -->
-<div class="slide" id="s21">
+<div class="slide" id="s22">
   <h2>5.2 &mdash; Escalation & Ambiguity Resolution</h2>
   <div class="two-col">
     <div class="card">
@@ -1049,7 +1094,7 @@ else:
 </div>
 
 <!-- SLIDE 22: Error Propagation -->
-<div class="slide" id="s22">
+<div class="slide" id="s23">
   <h2>5.3 &mdash; Error Propagation in Multi-Agent Systems</h2>
   <div class="two-col">
     <div class="card">
@@ -1087,7 +1132,7 @@ else:
 </div>
 
 <!-- SLIDE 23: Large Codebase -->
-<div class="slide" id="s23">
+<div class="slide" id="s24">
   <h2>5.4 &mdash; Large Codebase Exploration & Session Management</h2>
   <div class="card-grid">
     <div class="card">
@@ -1124,7 +1169,7 @@ else:
 </div>
 
 <!-- SLIDE 24: Human Review -->
-<div class="slide" id="s24">
+<div class="slide" id="s25">
   <h2>5.5 &mdash; Human Review & Confidence Calibration</h2>
   <div class="two-col">
     <div class="card">
@@ -1164,7 +1209,7 @@ else:
 </div>
 
 <!-- SLIDE 25: Provenance -->
-<div class="slide" id="s25">
+<div class="slide" id="s26">
   <h2>5.6 &mdash; Information Provenance & Uncertainty Handling</h2>
   <div class="two-col">
     <div class="card">
@@ -1215,7 +1260,7 @@ else:
 </div>
 
 <!-- SLIDE 26: Hooks -->
-<div class="slide" id="s26">
+<div class="slide" id="s27">
   <h2>B.1 &mdash; Hooks System Deep Dive</h2>
   <div class="two-col">
     <div class="card">
@@ -1268,7 +1313,7 @@ else:
 </div>
 
 <!-- SLIDE 27: Cheat Sheet -->
-<div class="slide" id="s27">
+<div class="slide" id="s28">
   <h2>B.2 &mdash; Quick Reference Cheat Sheet</h2>
   <div class="three-col">
     <div class="card">
@@ -1323,7 +1368,7 @@ else:
   </div>
 </div>
 
-<div class="slide-number" id="slideNum">1 / 28</div>
+<div class="slide-number" id="slideNum">1 / 29</div>
 
 <div class="nav">
   <button onclick="prev()">&#9664; Prev</button>
