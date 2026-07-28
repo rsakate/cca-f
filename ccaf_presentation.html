@@ -78,7 +78,7 @@
     <h1 style="font-size:3.5em;margin-bottom:5px;">CCA-F</h1>
     <p style="font-size:1.6em;color:var(--accent);margin-bottom:30px;">Claude Certified Architect &mdash; Foundations</p>
     <p style="font-size:1.2em;color:var(--text-muted);">Complete Exam Study Guide</p>
-    <p style="color:var(--text-muted);margin-top:10px;">5 Domains &bull; 33 Sections &bull; All Exam Topics</p>
+    <p style="color:var(--text-muted);margin-top:10px;">5 Domains &bull; 34 Sections &bull; All Exam Topics</p>
     <div style="margin-top:40px;">
       <div style="display:flex;gap:15px;justify-content:center;flex-wrap:wrap;">
         <span class="badge badge-api" style="font-size:1em;padding:6px 14px;">Claude API</span>
@@ -164,7 +164,8 @@
         <li onclick="goTo(18)"><span class="module-num">4.2</span> Few-Shot & Generalization</li>
         <li onclick="goTo(19)"><span class="module-num">4.3</span> Structured Output & Validation</li>
         <li onclick="goTo(20)"><span class="module-num">4.4</span> Batch API & Multipass</li>
-        <li onclick="goTo(21)"><span class="module-num">4.5</span> Temperature & Sampling Parameters</li>
+        <li onclick="goTo(21)"><span class="module-num">4.4b</span> Validation, Retry & Self-Correction</li>
+        <li onclick="goTo(22)"><span class="module-num">4.5</span> Temperature & Sampling Parameters</li>
       </ul>
       <h3>Module 5: Context & Reliability <span style="color:var(--primary);font-size:0.7em;">(15%)</span></h3>
       <ul class="toc">
@@ -375,6 +376,29 @@ class TicketContext:
     <p>Set a <b>hard iteration limit</b> (e.g., max 3 rounds) to control costs and latency. Unlimited iteration is impractical; adaptive stopping is complex to implement reliably.</p>
   </div>
   <div class="exam-tip">When the exam asks about "most reliable enforcement" for tool ordering, choose <b>PostToolUse hooks</b> or <b>orchestration code</b> over system prompt rules. Prompts suggest; code enforces. Programmatic = 0% failure; prompts = probabilistic. Agent SDK hooks provide interception at the SDK level.</div>
+  <div class="card" style="margin-top:10px;">
+    <h3>Agent SDK Hooks for Data Normalization</h3>
+    <p><code>PostToolUse</code> hooks can <b>normalize heterogeneous data formats</b> from different MCP tools before the agent processes them:</p>
+    <div class="two-col">
+      <div>
+        <h4>Normalization Examples</h4>
+        <ul>
+          <li><b>Timestamps:</b> Unix epoch &rarr; ISO 8601</li>
+          <li><b>Status codes:</b> Numeric <code>200</code> &rarr; <code>"success"</code></li>
+          <li><b>Currency:</b> <code>"$1,234.56"</code> &rarr; <code>1234.56</code></li>
+          <li><b>Dates:</b> <code>"03/15/2024"</code> &rarr; <code>"2024-03-15"</code></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Compliance Interception</h4>
+        <ul>
+          <li>Block outgoing tool calls that violate compliance rules (e.g., refunds exceeding $500)</li>
+          <li>Redirect blocked actions to alternative workflows (e.g., human escalation)</li>
+          <li>Choose hooks over prompts when business rules require <b>guaranteed compliance</b></li>
+        </ul>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- SLIDE 7: Tool Interfaces -->
@@ -547,6 +571,14 @@ return {"isError": True, "content": "Max retries exceeded"}</code></pre>
   </div>
   <div class="exam-tip">Use existing MCP servers (e.g., Jira) rather than building custom ones or using raw curl. MCP gives the agent data directly without copy-paste. <b>Evaluate community MCP servers before building custom ones.</b></div>
   <div class="card" style="margin-top:15px;">
+    <h3>MCP Resources (Content Catalogs)</h3>
+    <ul>
+      <li><b>MCP resources</b> expose read-only content catalogs (issue summaries, documentation hierarchies, database schemas) to give agents <b>visibility into available data without exploratory tool calls</b></li>
+      <li>Resources reduce the "discovery problem" &mdash; the agent can browse what's available before making targeted tool calls</li>
+      <li>Example: A Jira MCP server might expose a resource listing all project keys and issue types, so the agent knows what to query</li>
+    </ul>
+  </div>
+  <div class="card" style="margin-top:15px;">
     <h3>MCP Credential Security</h3>
     <ul>
       <li>Use <b>environment variable expansion</b> in .mcp.json: <code>"password": "$DB_PASSWORD"</code></li>
@@ -697,6 +729,11 @@ Review the code changes using:
       </ul>
       <h4>Custom Command Parameterization</h4>
       <p>Use <code>$ARGUMENTS</code> in command markdown: <code>/generate-endpoint users</code> &rarr; "users" replaces <code>$ARGUMENTS</code></p>
+      <h4>argument-hint Frontmatter</h4>
+      <p>Use <code>argument-hint</code> to prompt developers for required parameters when they invoke the skill without arguments:</p>
+<pre><code>---
+argument-hint: "Enter the service name to scaffold"
+---</code></pre>
     </div>
     <div class="card">
       <h3>File Locations</h3>
@@ -839,6 +876,7 @@ git diff HEAD~1 | claude -p "review changes"</code></pre>
       <table>
         <tr><td><code>-p</code></td><td>Non-interactive (headless) mode</td></tr>
         <tr><td><code>--output-format json</code></td><td>Structured JSON output (print mode only)</td></tr>
+        <tr><td><code>--json-schema</code></td><td>Enforce specific JSON schema on output</td></tr>
         <tr><td><code>--max-turns N</code></td><td>Limit agentic turns (print mode only)</td></tr>
         <tr><td><code>--allowedTools</code></td><td>Whitelist tools (e.g., <code>"Read,Grep,Glob"</code>)</td></tr>
         <tr><td><code>--disallowedTools</code></td><td>Blacklist tools (e.g., <code>"Edit,Write"</code>)</td></tr>
@@ -849,7 +887,16 @@ git diff HEAD~1 | claude -p "review changes"</code></pre>
     </div>
   </div>
   <div class="warning">Running Claude Code in CI <b>without the <code>-p</code> flag</b> will cause the process to hang waiting for interactive input. Always use <code>-p</code> for non-interactive pipelines.</div>
-  <div class="exam-tip">The <code>-p</code> flag enables <b>non-interactive mode</b> for CI/CD. Use <code>--allowedTools</code> to restrict to read-only tools for safety. Combined with <code>--output-format json</code>, you can parse results programmatically.</div>
+  <div class="card" style="margin-top:10px;">
+    <h3>CI/CD Best Practices</h3>
+    <ul>
+      <li><b>Session context isolation</b>: The same Claude session that <b>generated</b> code is less effective at <b>reviewing</b> it &mdash; use a separate, independent review instance</li>
+      <li><b>Include prior review findings</b> when re-running reviews after new commits, instructing Claude to report only <b>new or still-unaddressed</b> issues to avoid duplicate comments</li>
+      <li><b>Provide existing test files</b> in context so test generation avoids suggesting duplicate scenarios already covered by the test suite</li>
+      <li>Document <b>testing standards</b>, valuable <b>test criteria</b>, and available <b>fixtures</b> in CLAUDE.md for CI-invoked Claude Code</li>
+    </ul>
+  </div>
+  <div class="exam-tip">The <code>-p</code> flag enables <b>non-interactive mode</b> for CI/CD. Use <code>--allowedTools</code> to restrict to read-only tools for safety. Combined with <code>--output-format json</code> and <code>--json-schema</code>, you can parse results programmatically.</div>
 </div>
 
 <!-- SLIDE 17: Explicit Criteria -->
@@ -1016,6 +1063,12 @@ raise ValueError("Failed after retries")</code></pre>
         <p>Without null option, Claude may <b>hallucinate</b> a value rather than admit it's missing.</p>
       </div>
       <div>
+        <h4>Enum "unclear" + "other" Patterns</h4>
+        <ul>
+          <li>Add <code>"unclear"</code> enum values for ambiguous cases &mdash; prevents forcing a wrong classification</li>
+          <li>Add <code>"other"</code> + <code>detail</code> string field for extensible categories the schema didn't anticipate</li>
+          <li>Include <b>format normalization rules</b> in prompts alongside strict schemas to handle inconsistent source formatting</li>
+        </ul>
         <h4>JSON Schema Limitations</h4>
         <div class="warning">JSON schemas with <code>tool_use</code> eliminate <b>syntax errors</b> (malformed JSON, missing fields) but do <b>NOT prevent semantic errors</b> (wrong values, hallucinated data, incorrect classifications). You still need validation logic to check semantic correctness.</div>
       </div>
@@ -1038,12 +1091,17 @@ raise ValueError("Failed after retries")</code></pre>
         <li>Order NOT guaranteed &mdash; use meaningful <code>custom_id</code></li>
         <li><b>Stacks with prompt caching:</b> 50% batch + 90% cache = <b>up to 95% savings</b></li>
       </ul>
+      <h4>Limitations</h4>
+      <ul>
+        <li><b>No multi-turn tool calling</b> within a single batch request (cannot execute tools mid-request and return results)</li>
+        <li>Use <code>custom_id</code> fields to correlate batch request/response pairs</li>
+        <li>Calculate submission frequency based on SLA: e.g., 4-hour windows to guarantee 30-hour total SLA with 24-hour processing</li>
+      </ul>
       <h4>Use Cases</h4>
       <ul>
-        <li>Large-scale evaluations</li>
-        <li>Content moderation at scale</li>
-        <li>Bulk data analysis</li>
-        <li>NOT for real-time interactions</li>
+        <li>Large-scale evaluations, overnight reports, nightly test generation</li>
+        <li>Content moderation at scale, weekly audits</li>
+        <li><b>NOT</b> for real-time interactions or blocking pre-merge checks</li>
       </ul>
     </div>
     <div class="card">
@@ -1071,6 +1129,54 @@ else:
   </div>
   <div class="warning">Keep <b>blocking pre-merge checks synchronous</b> &mdash; do NOT route them through the Batch API. Batch API has a 24-hour SLA and is for latency-tolerant workflows only. A CI check that blocks a merge must return a result immediately.</div>
   <div class="exam-tip">Batch API gives <b>50% cost savings</b> and stacks with caching for up to <b>95% savings</b>. But never batch time-sensitive operations like pre-merge CI checks &mdash; those must be synchronous.</div>
+</div>
+
+<!-- SLIDE 20B: Validation, Retry & Self-Correction (NEW) -->
+<div class="slide" id="s20b">
+  <h2>4.4b &mdash; Validation, Retry & Self-Correction Flows</h2>
+  <div class="two-col">
+    <div class="card">
+      <h3>Retry-with-Error-Feedback Pattern</h3>
+      <p>When extraction fails validation, include the <b>original document + failed extraction + specific errors</b> in the retry prompt:</p>
+<pre><code># Retry prompt structure:
+"The previous extraction had errors:
+- 'total_amount' was $1,234 but line items
+  sum to $1,134 (difference: $100)
+- 'date_signed' was null but appears on page 3
+
+Original document: [full text]
+Previous attempt: [failed JSON]
+
+Please re-extract with corrections."</code></pre>
+      <h4>When Retries Are Ineffective</h4>
+      <ul>
+        <li style="color:var(--red);">Information is <b>absent</b> from the source document &mdash; retrying won't create it</li>
+        <li style="color:var(--green);">Format mismatches and structural errors &mdash; retries succeed with error feedback</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Self-Correction Validation Flows</h3>
+      <p>Extract <b>both</b> calculated and stated values to detect discrepancies:</p>
+<pre><code>{
+  "stated_total": 1234.00,
+  "calculated_total": 1134.00,
+  "conflict_detected": true,
+  "line_items": [...]
+}</code></pre>
+      <h4>detected_pattern Field</h4>
+      <ul>
+        <li>Track which code constructs trigger findings in a <code>detected_pattern</code> field</li>
+        <li>Enables <b>systematic analysis</b> of false positive patterns when developers dismiss findings</li>
+        <li>Feedback loop: analyze dismissals &rarr; improve prompts for those patterns</li>
+      </ul>
+      <h4>Prompt Refinement on Samples</h4>
+      <ul>
+        <li>Refine prompts on a <b>sample set</b> before batch-processing large volumes</li>
+        <li>Maximize first-pass success to reduce iterative resubmission costs</li>
+      </ul>
+    </div>
+  </div>
+  <div class="exam-tip">Don't retry when the info isn't in the source document. DO retry when the model made a format/structural error &mdash; include the original document, failed extraction, and specific validation errors in the retry prompt.</div>
 </div>
 
 <!-- SLIDE 21: Temperature & Sampling Parameters -->
@@ -1324,6 +1430,15 @@ response = client.messages.create(
       <li>Implement as: spawn a new API call with only the output to review (no conversation history)</li>
     </ul>
   </div>
+  <div class="card" style="margin-top:10px;">
+    <h3>Multi-Pass Review Architecture</h3>
+    <ul>
+      <li><b>Per-file local passes</b>: Analyze each file individually for local issues (bugs, style, security)</li>
+      <li><b>Cross-file integration pass</b>: Separate pass examining data flow and dependencies across files</li>
+      <li><b>Verification pass</b>: Model self-reports confidence alongside each finding for calibrated routing</li>
+      <li>Validate accuracy <b>per document type and per field</b> before automating high-confidence extractions</li>
+    </ul>
+  </div>
 </div>
 
 <!-- SLIDE 27: Provenance -->
@@ -1374,7 +1489,16 @@ response = client.messages.create(
 - Holiday return extension [Source C only]</code></pre>
     </div>
   </div>
-  <div class="exam-tip">Never silently pick one conflicting source. Present <b>both</b> with publication dates and let the reviewer decide. Distinguish confirmed, contested, and single-source claims.</div>
+  <div class="card" style="margin-top:10px;">
+    <h3>Temporal Data & Coverage Annotations</h3>
+    <ul>
+      <li>Require <b>publication/collection dates</b> in structured outputs to prevent temporal differences from being misinterpreted as contradictions</li>
+      <li>Render different content types appropriately: financial data as <b>tables</b>, news as <b>prose</b>, technical findings as <b>structured lists</b></li>
+      <li>Structure synthesis output with <b>coverage annotations</b> indicating which findings are well-supported vs. which have gaps due to unavailable sources</li>
+      <li>Require subagents to include <b>metadata</b> (dates, source locations, methodological context) in structured outputs for accurate downstream synthesis</li>
+    </ul>
+  </div>
+  <div class="exam-tip">Never silently pick one conflicting source. Present <b>both</b> with publication dates and let the reviewer decide. Distinguish confirmed, contested, and single-source claims. Always require <b>temporal context</b> in structured outputs.</div>
 </div>
 
 <!-- SLIDE 28: Hooks -->

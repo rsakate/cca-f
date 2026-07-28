@@ -1674,6 +1674,318 @@ const QUESTIONS = [
   correct:0,
   explanation:"Starting with Claude Opus 4.7, the temperature parameter is deprecated and replaced by the effort parameter, which accepts three values: low, medium, and high. This represents a shift from fine-grained numerical control to a simpler categorical approach."
 },
+
+// ──────────────────────────────────────────────
+//  SCENARIO 5 — CLAUDE CODE FOR CI (8 Qs)
+// ──────────────────────────────────────────────
+{
+  id:116, module:3, scenario:"Claude Code for Continuous Integration",
+  text:"Your CI pipeline runs Claude Code to review pull requests. The same Claude session generates code and then reviews it. Quality assurance notices that reviews rarely find bugs in Claude-generated code. What is the most likely cause?",
+  options:[
+    "Session context isolation failure: the same session that generated the code retains its reasoning context, making it less likely to question its own decisions",
+    "The model is too accurate to find bugs in its own code",
+    "The review prompt is too vague to catch real issues",
+    "Claude Code in CI mode disables self-review capabilities"
+  ],
+  correct:0,
+  explanation:"A model retains reasoning context from generation, making it less likely to question its own decisions in the same session. This is why independent review instances (separate API calls without prior reasoning context) catch subtle issues that self-review misses. Always use a separate Claude instance for reviewing generated code."
+},
+{
+  id:117, module:3, scenario:"Claude Code for Continuous Integration",
+  text:"Your CI pipeline uses <code>claude -p \"review this PR\"</code> to post review comments. After developers push fixes, the next review run duplicates many of the same comments. How should you fix this?",
+  options:[
+    "Include prior review findings in context when re-running reviews, instructing Claude to report only new or still-unaddressed issues",
+    "Delete all previous comments before each review run",
+    "Use a different model for each review pass",
+    "Reduce the number of review criteria to minimize overlap"
+  ],
+  correct:0,
+  explanation:"Including prior findings in context tells Claude what has already been reported, so it can focus on new or still-unaddressed issues. This avoids duplicate comments that annoy developers and erode trust in the review system."
+},
+{
+  id:118, module:3, scenario:"Claude Code for Continuous Integration",
+  text:"Your CI pipeline needs Claude Code to output structured findings that can be parsed and posted as inline PR comments. Which flag combination achieves this?",
+  options:[
+    "<code>-p</code> with <code>--output-format json</code> and optionally <code>--json-schema</code> for a specific schema",
+    "<code>-p</code> with <code>--format markdown</code> for readable comments",
+    "<code>--ci-mode</code> with <code>--comments</code> for automatic PR commenting",
+    "<code>-p</code> with <code>--verbose</code> for detailed output"
+  ],
+  correct:0,
+  explanation:"-p enables non-interactive mode, --output-format json produces machine-parseable structured output, and --json-schema can enforce a specific output schema. This combination lets CI pipelines parse findings and post them as inline comments programmatically."
+},
+{
+  id:119, module:3, scenario:"Claude Code for Continuous Integration",
+  text:"You want Claude Code to generate test cases in CI. The test suite already has 200 tests. How should you prevent Claude from suggesting duplicate test scenarios?",
+  options:[
+    "Provide existing test files in context so Claude can see what's already covered and focus on gaps",
+    "Tell Claude to generate unique test names",
+    "Run deduplication on generated tests after creation",
+    "Limit test generation to untested files only"
+  ],
+  correct:0,
+  explanation:"Providing existing test files in context lets Claude see what scenarios are already covered. Without this context, Claude will likely suggest tests for common cases that the suite already handles, wasting time and creating noise."
+},
+{
+  id:120, module:3, scenario:"Claude Code for Continuous Integration",
+  text:"You want to document your project's testing standards so CI-invoked Claude Code generates high-quality tests. Where should this information go?",
+  options:[
+    "In the project's <code>CLAUDE.md</code> — it's automatically loaded in CI contexts and shared with the team",
+    "In a CI-specific environment variable",
+    "In the CI pipeline YAML configuration file",
+    "In a separate README.md file in the test directory"
+  ],
+  correct:0,
+  explanation:"CLAUDE.md is the mechanism for providing project context (testing standards, fixture conventions, review criteria) to CI-invoked Claude Code. It's version-controlled and automatically loaded, ensuring consistent behavior across interactive and CI usage."
+},
+{
+  id:121, module:3, scenario:"Claude Code for Continuous Integration",
+  text:"A pull request modifies 14 files. Your single-pass review produces inconsistent results: detailed for some files, superficial for others, and contradictory between files. How should you restructure the review?",
+  options:[
+    "Split into focused passes: analyze each file individually for local issues, then run a separate cross-file integration pass examining data flow",
+    "Require developers to split large PRs into smaller submissions",
+    "Switch to a higher-tier model with a larger context window",
+    "Run three independent review passes and only flag issues found in at least two runs"
+  ],
+  correct:0,
+  explanation:"Splitting into per-file local passes plus a separate cross-file integration pass directly addresses attention dilution. File-by-file analysis ensures consistent depth, while the integration pass catches cross-file issues like data flow problems. This is the multi-pass review architecture."
+},
+{
+  id:122, module:4, scenario:"Claude Code for Continuous Integration",
+  text:"Your automated code review flags many false positives in the 'code style' category, eroding developer trust. Even accurate findings in other categories are now being ignored. What is the most effective fix?",
+  options:[
+    "Temporarily disable the high false-positive category while improving its prompts, then re-enable once precision improves",
+    "Add a confidence threshold to filter low-confidence findings",
+    "Switch to a more capable model",
+    "Reduce the number of review criteria across all categories"
+  ],
+  correct:0,
+  explanation:"High false positive rates in one category undermine developer trust in ALL categories — the credibility damage spills over. The proportionate fix is to disable the noisy category temporarily while improving its criteria, preserving trust in the accurate categories. Re-enable once precision meets the bar."
+},
+{
+  id:123, module:4, scenario:"Claude Code for Continuous Integration",
+  text:"Your CI review prompt says: 'Flag comments only when claimed behavior contradicts actual code behavior.' A colleague suggests changing it to: 'Check that comments are accurate.' Which prompt is more effective?",
+  options:[
+    "The first prompt — it defines an explicit, testable criterion (contradiction between claim and behavior), while the second is vague and leads to more false positives",
+    "The second prompt — it's broader and will catch more issues",
+    "Both are equivalent and produce the same results",
+    "Neither is effective; use few-shot examples instead of criteria"
+  ],
+  correct:0,
+  explanation:"Explicit criteria like 'flag only when claimed behavior contradicts actual behavior' give the model a clear, testable decision boundary. Vague instructions like 'check accuracy' leave too much discretion, causing the model to over-flag comments that are slightly imprecise but not wrong."
+},
+
+// ──────────────────────────────────────────────
+//  SCENARIO 6 — STRUCTURED DATA EXTRACTION (10 Qs)
+// ──────────────────────────────────────────────
+{
+  id:124, module:4, scenario:"Structured Data Extraction",
+  text:"You're building an extraction system for legal contracts. Some contracts don't contain a 'termination clause'. Your JSON schema has <code>termination_clause</code> as a required string field. What problem does this create?",
+  options:[
+    "The model will fabricate a termination clause rather than admit it's missing — make the field nullable to prevent hallucination",
+    "The extraction will fail with a schema validation error",
+    "The model will return an empty string, which is acceptable",
+    "The model will skip the entire document"
+  ],
+  correct:0,
+  explanation:"When a required field doesn't have a nullable option, the model is forced to produce a value. If the information genuinely isn't in the document, it may hallucinate plausible-sounding content rather than admitting absence. Making fields nullable (type: ['string', 'null']) prevents this."
+},
+{
+  id:125, module:4, scenario:"Structured Data Extraction",
+  text:"Your extraction schema has a <code>document_type</code> field with enum values <code>[\"contract\", \"invoice\", \"memo\"]</code>. Users submit a purchase order — a type your schema doesn't cover. What schema improvement prevents misclassification?",
+  options:[
+    "Add <code>\"other\"</code> to the enum and include a <code>document_type_detail</code> string field for extensible categorization",
+    "Add every possible document type to the enum",
+    "Remove the enum constraint and allow free-text classification",
+    "Add a validation step that rejects unknown document types"
+  ],
+  correct:0,
+  explanation:"Adding 'other' + a detail field provides extensibility: the model classifies as 'other' when none of the existing categories fit and provides specifics in the detail field. This prevents forcing incorrect classifications while maintaining structured output. Adding 'unclear' is also useful for genuinely ambiguous cases."
+},
+{
+  id:126, module:4, scenario:"Structured Data Extraction",
+  text:"Your extraction pipeline validates output and finds that line item amounts don't sum to the stated total. How should the retry-with-error-feedback pattern work?",
+  options:[
+    "Include the original document, the failed extraction, and the specific validation error ('line items sum to $1,134 but stated total is $1,234') in the retry prompt",
+    "Simply retry the extraction with the same prompt — the model may get it right the second time",
+    "Lower the temperature and retry without any error context",
+    "Mark the document as failed and skip it"
+  ],
+  correct:0,
+  explanation:"Retry-with-error-feedback means including the ORIGINAL document, the FAILED extraction, and the SPECIFIC validation errors. This gives the model targeted guidance on what to fix. Simply retrying without context is unlikely to produce different results."
+},
+{
+  id:127, module:4, scenario:"Structured Data Extraction",
+  text:"Your extraction retry loop has attempted 3 retries for a document, but the 'effective_date' field keeps coming back as null. The document genuinely does not contain an effective date. What should you do?",
+  options:[
+    "Accept the null value — retries are ineffective when the required information is simply absent from the source document",
+    "Continue retrying with more specific prompts about where to find the date",
+    "Escalate to a different model with a larger context window",
+    "Default to the document creation date as a fallback"
+  ],
+  correct:0,
+  explanation:"Retries are effective for format/structural errors but INEFFECTIVE when information genuinely doesn't exist in the source. If the document lacks an effective date, no amount of retrying will produce one. Accept the null and move on — this is why nullable fields are important."
+},
+{
+  id:128, module:4, scenario:"Structured Data Extraction",
+  text:"You want guaranteed structured output from Claude for an extraction task. Multiple extraction schemas exist for different document types, and you don't know the document type in advance. What <code>tool_choice</code> setting should you use?",
+  options:[
+    "<code>tool_choice: 'any'</code> — forces the model to call one of the extraction tools (it picks which schema fits the document)",
+    "<code>tool_choice: 'auto'</code> — the model may respond with text instead of structured output",
+    "<code>tool_choice: {'type':'tool','name':'extract'}</code> — forces a specific extraction tool",
+    "<code>tool_choice: 'none'</code> — prevents tool use entirely"
+  ],
+  correct:0,
+  explanation:"'any' forces the model to call at least one tool but lets it choose which one. This is ideal when you have multiple extraction schemas and the document type is unknown — the model selects the appropriate schema. 'auto' risks getting text instead of structured output."
+},
+{
+  id:129, module:4, scenario:"Structured Data Extraction",
+  text:"Your extraction system processes invoices from multiple vendors. Each vendor uses different date formats, currency notations, and field layouts. How should you handle this inconsistency?",
+  options:[
+    "Include format normalization rules in the prompt alongside strict output schemas (e.g., 'always output dates as ISO 8601 regardless of source format')",
+    "Create a separate extraction schema for each vendor",
+    "Pre-process all documents to a standardized format before extraction",
+    "Let the model output whatever format the source uses"
+  ],
+  correct:0,
+  explanation:"Format normalization rules in the prompt (e.g., 'convert all dates to ISO 8601', 'output amounts as decimal numbers without currency symbols') handle source inconsistency while maintaining consistent structured output. This is simpler than per-vendor schemas or pre-processing."
+},
+{
+  id:130, module:5, scenario:"Structured Data Extraction",
+  text:"Your extraction pipeline achieves 97% overall accuracy, so you decide to automate all high-confidence extractions. A week later, users report incorrect financial amounts on invoices. What went wrong?",
+  options:[
+    "Aggregate accuracy masked poor performance on specific fields — you need to validate accuracy per document type AND per field before automating",
+    "The model degraded over time due to API changes",
+    "97% accuracy is insufficient for automation",
+    "The confidence scores were uncalibrated"
+  ],
+  correct:0,
+  explanation:"97% overall can hide that 'amount' fields on invoices are only 85% accurate while 'name' fields are 99%. Aggregate metrics mask per-field and per-document-type weaknesses. Always validate accuracy by document type and field segment before automating high-confidence extractions."
+},
+{
+  id:131, module:4, scenario:"Structured Data Extraction",
+  text:"You're designing a self-correction validation flow for invoice extraction. What output fields enable automatic discrepancy detection?",
+  options:[
+    "Extract both <code>stated_total</code> and <code>calculated_total</code> (sum of line items), plus a <code>conflict_detected</code> boolean",
+    "Extract only the stated total and validate manually",
+    "Extract line items without totals to avoid discrepancies",
+    "Add a confidence score to the total field"
+  ],
+  correct:0,
+  explanation:"Extracting both stated_total (from the document) and calculated_total (computed from line items) enables automatic discrepancy detection. The conflict_detected boolean flags documents needing review. This self-correction pattern catches errors without human review of every extraction."
+},
+{
+  id:132, module:4, scenario:"Structured Data Extraction",
+  text:"The Batch API does NOT support multi-turn tool calling within a single request. How does this affect extraction workflow design?",
+  options:[
+    "Each batch request must be a single extraction turn — you cannot have the model call a tool, get results, and call another tool within one batch item",
+    "Multi-turn tool calling works the same in batch mode as in real-time mode",
+    "Batch requests automatically chain tool calls internally",
+    "You need to use streaming mode within batch requests for tool calling"
+  ],
+  correct:0,
+  explanation:"The Batch API processes each request as a single turn — it cannot execute tools mid-request and return results for the model to process. This means extraction workflows using multi-turn tool calling must use the synchronous API. Batch is ideal for single-turn extraction with tool_choice forcing a specific extraction tool."
+},
+{
+  id:133, module:4, scenario:"Structured Data Extraction",
+  text:"You're using <code>custom_id</code> fields in your Batch API requests. What is their primary purpose?",
+  options:[
+    "Correlating batch request/response pairs — since batch results are NOT returned in submission order, custom_id lets you match each response to its original document",
+    "Setting priority levels for batch processing",
+    "Enabling deduplication of identical requests",
+    "Tracking API usage for billing purposes"
+  ],
+  correct:0,
+  explanation:"Batch results are not returned in submission order. custom_id fields let you match each response back to its original request/document. Use meaningful IDs (e.g., document filenames or database keys) so you can easily map results back to source documents."
+},
+
+// ──────────────────────────────────────────────
+//  ADDITIONAL GAP COVERAGE (7 Qs)
+// ──────────────────────────────────────────────
+{
+  id:134, module:1, scenario:"Customer Support Resolution Agent",
+  text:"Your <code>lookup_order</code> tool returns multiple customer matches for the name 'John Smith'. The agent selects the first match and processes a refund. What should the agent do instead?",
+  options:[
+    "Ask the customer for additional identifiers (email, order number, phone) to disambiguate rather than selecting based on heuristics",
+    "Process the refund for the most recently active account",
+    "Select the customer with the highest order value",
+    "Process refunds for all matching accounts"
+  ],
+  correct:0,
+  explanation:"Multiple matches require clarification — requesting additional identifiers (email, order number, phone). Selecting based on heuristics (first match, most recent, highest value) risks processing actions on the wrong account. The exam emphasizes asking for clarification over guessing."
+},
+{
+  id:135, module:2, scenario:"Developer Productivity with Claude",
+  text:"Your MCP server exposes <b>resources</b> alongside tools. What is the primary purpose of MCP resources?",
+  options:[
+    "Resources expose read-only content catalogs (issue summaries, documentation hierarchies, database schemas) that give agents visibility into available data without exploratory tool calls",
+    "Resources are cached copies of tool responses for faster access",
+    "Resources are configuration files that define tool behavior",
+    "Resources replace tools for read-only operations"
+  ],
+  correct:0,
+  explanation:"MCP resources provide a discovery mechanism — they expose content catalogs that let agents understand what data is available before making targeted tool calls. For example, a Jira MCP server might expose a resource listing all project keys, so the agent knows what to query rather than making exploratory calls."
+},
+{
+  id:136, module:1, scenario:"Multi-Agent Research System",
+  text:"Your coordinator agent's <code>AgentDefinition</code> configuration includes <code>descriptions</code>, <code>system prompts</code>, and <code>tool restrictions</code> for each subagent type. What is the key benefit of this configuration?",
+  options:[
+    "Each subagent type can be precisely configured with role-specific descriptions, focused system prompts, and scoped tool access — preventing cross-specialization misuse",
+    "AgentDefinition allows subagents to share conversation history",
+    "It automatically scales subagent instances based on load",
+    "It enables real-time monitoring of subagent performance"
+  ],
+  correct:0,
+  explanation:"AgentDefinition configuration gives each subagent type a clear role: a description explaining its purpose, a system prompt with domain-specific instructions, and tool restrictions limiting it to relevant tools (e.g., the synthesis agent only gets verify_fact, not web_search). This prevents cross-specialization misuse."
+},
+{
+  id:137, module:5, scenario:"Customer Support Resolution Agent",
+  text:"A customer says 'I want to speak to a manager' about a straightforward return with photo evidence. The agent can easily process this return. What should the agent do?",
+  options:[
+    "Honor the explicit request for a human agent immediately — do not attempt investigation first when the customer explicitly asks for escalation",
+    "Process the return first since it's straightforward, then offer escalation if needed",
+    "Explain that the return can be handled automatically and ask if they still want a manager",
+    "Escalate but include a note that the issue appears resolvable"
+  ],
+  correct:0,
+  explanation:"When a customer explicitly requests a human agent, honor that request immediately without first attempting investigation. This is a key escalation principle: explicit human requests are always escalated regardless of case simplicity. However, if the customer just sounds frustrated but hasn't asked for a human, the agent should acknowledge frustration and offer resolution."
+},
+{
+  id:138, module:5, scenario:"Customer Support Resolution Agent",
+  text:"Your agent encounters a customer requesting a competitor price match. Your policy document covers price adjustments for items on your own site but is silent about competitor pricing. What should the agent do?",
+  options:[
+    "Escalate to a human — the policy is ambiguous or silent on the customer's specific request, which is a valid escalation trigger",
+    "Deny the request since the policy doesn't explicitly permit it",
+    "Approve the price match since the policy covers 'price adjustments'",
+    "Ask the customer to call back when a supervisor is available"
+  ],
+  correct:0,
+  explanation:"Policy gaps (when policy is ambiguous or silent on the specific request) are a valid escalation trigger. The policy covers own-site adjustments but is silent on competitor pricing — the agent shouldn't interpret this either way. Escalate to a human who can make a judgment call."
+},
+{
+  id:139, module:5, scenario:"Multi-Agent Research System",
+  text:"Your synthesis agent combines findings from multiple subagents into a final report. Some findings are well-supported by multiple sources, while others come from a single source that timed out before returning complete results. How should the synthesis output be structured?",
+  options:[
+    "Structure the report with coverage annotations: distinguish well-supported findings from those with gaps due to unavailable sources, noting which topic areas have incomplete coverage",
+    "Include all findings equally without distinguishing their support level",
+    "Exclude any findings from sources that had partial failures",
+    "Mark all findings as 'unverified' if any source had issues"
+  ],
+  correct:0,
+  explanation:"Coverage annotations in synthesis output tell the reader which findings are well-supported vs. which have gaps. This is the graceful degradation principle: annotate gaps rather than hiding failures (which misleads) or terminating the report (which loses valid findings). Transparency about coverage enables informed decision-making."
+},
+{
+  id:140, module:1, scenario:"Multi-Agent Research System",
+  text:"You need to normalize tool results from different MCP servers before the agent processes them. One server returns Unix timestamps, another returns ISO 8601 dates, and a third returns 'MM/DD/YYYY' strings. Where should this normalization happen?",
+  options:[
+    "In <code>PostToolUse</code> hooks that intercept tool results and transform data formats before the agent processes them",
+    "In the system prompt asking the agent to handle different formats",
+    "In a pre-processing step before any tools are called",
+    "In each MCP server's response handler"
+  ],
+  correct:0,
+  explanation:"PostToolUse hooks intercept tool results for transformation before the model processes them. This is the data normalization pattern: hooks normalize heterogeneous formats (Unix timestamps, ISO 8601, date strings) into a consistent format, so the agent always sees clean, uniform data regardless of source."
+},
 ];
 
 // ============================================================
