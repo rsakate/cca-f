@@ -23,7 +23,13 @@ cca-f/
 ├── week-5/          Module 5 — Context Management & Reliability
 ├── scripts/         Utility scripts (review gate, PPTX generators)
 ├── ccaf_presentation.html   Complete study guide (34 slides)
-├── ccaf_mock_test.html      Mock exam suite (140 questions)
+├── ccaf_mock_test.html      Mock exam suite (136 questions)
+├── questions/               Domain-wise question banks (loaded by mock test)
+│   ├── domain1_agentic_architecture.js
+│   ├── domain2_tool_design_mcp.js
+│   ├── domain3_claude_code_config.js
+│   ├── domain4_prompt_engineering.js
+│   └── domain5_context_reliability.js
 └── requirements.txt
 ```
 
@@ -150,30 +156,42 @@ A comprehensive **34-slide interactive presentation** covering all 5 exam domain
 
 ### Mock Exam Suite (`ccaf_mock_test.html`)
 
-A **140-question mock exam** organized across all 5 modules and all 6 exam scenarios. Open in any browser.
+A **136-question scenario-based mock exam** organized across all 5 domains and all 6 exam scenarios. Open in any browser — no server required.
+
+**Exam Modes:**
+
+| Mode | Description |
+|------|-------------|
+| **Exam Mode** | Timed test simulating real exam conditions. Select an answer and click "Check Answer" per question. See results as you go, or submit all at the end. Timer counts down and scores are calculated against the 70% passing threshold. |
+| **Practice Mode** | Untimed, self-paced study. Select an answer, click "Check Answer" to see instant correct/incorrect feedback with detailed explanations. Ideal for learning and understanding concepts. |
+| **Review Mode** | All correct answers and explanations are shown upfront. Browse through every question to study the reasoning and exam patterns without answering. |
 
 **Features:**
-- Module-based filtering (attempt by domain or full exam simulation)
+- Module-based filtering — attempt by single domain or full exam simulation
 - Scenario-tagged questions matching the 6 exam scenarios
-- Instant scoring with detailed explanations for every answer
-- Progress tracking and review mode
+- Per-question "Check Answer" with detailed explanations
+- Flag questions for later review
+- Navigation dots for quick jumping between questions
+- Score breakdown by module with pass/fail indicator
+- Post-exam review with filters (All / Incorrect / Correct / Flagged / Unanswered)
 
 **Question distribution:**
-| Module | Questions |
-|--------|-----------|
-| M1 — Agentic Architecture & Orchestration | ~30 |
-| M2 — Tool Design & MCP | ~25 |
-| M3 — Claude Code Configuration & Workflows | ~25 |
-| M4 — Prompt Engineering & Structured Output | ~25 |
-| M5 — Context Management & Reliability | ~35 |
+
+| Module | File | Questions |
+|--------|------|-----------|
+| M1 — Agentic Architecture & Orchestration | `questions/domain1_agentic_architecture.js` | 28 |
+| M2 — Tool Design & MCP | `questions/domain2_tool_design_mcp.js` | 28 |
+| M3 — Claude Code Configuration & Workflows | `questions/domain3_claude_code_config.js` | 28 |
+| M4 — Prompt Engineering & Structured Output | `questions/domain4_prompt_engineering.js` | 24 |
+| M5 — Context Management & Reliability | `questions/domain5_context_reliability.js` | 28 |
 
 **Scenario coverage:**
-1. Customer Support Agent
+1. Customer Support Resolution Agent
 2. Code Generation with Claude Code
-3. Multi-Agent Research Pipeline
-4. Developer Productivity Tools
-5. Claude Code for Continuous Integration (CI/CD)
-6. Structured Data Extraction at Scale
+3. Multi-Agent Research System
+4. Developer Productivity with Claude
+5. Claude Code for Continuous Integration
+6. Structured Data Extraction
 
 ---
 
