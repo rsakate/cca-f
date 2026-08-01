@@ -23,7 +23,7 @@ cca-f/
 ├── week-5/          Module 5 — Context Management & Reliability
 ├── scripts/         Utility scripts (review gate, PPTX generators)
 ├── ccaf_presentation.html   Complete study guide (34 slides)
-├── ccaf_mock_test.html      Mock exam suite (136 questions)
+├── ccaf_mock_test.html      Mock exam suite (60 scenario-based questions)
 ├── questions/               Domain-wise question banks (loaded by mock test)
 │   ├── domain1_agentic_architecture.js
 │   ├── domain2_tool_design_mcp.js
@@ -156,7 +156,7 @@ A comprehensive **34-slide interactive presentation** covering all 5 exam domain
 
 ### Mock Exam Suite (`ccaf_mock_test.html`)
 
-A **136-question scenario-based mock exam** organized across all 5 domains and all 6 exam scenarios. Open in any browser — no server required.
+A **60-question scenario-based mock exam** matching the real exam format — organized across all 5 domains and all 6 exam scenarios. Open in any browser — no server required.
 
 **Exam Modes:**
 
@@ -179,11 +179,11 @@ A **136-question scenario-based mock exam** organized across all 5 domains and a
 
 | Module | File | Questions |
 |--------|------|-----------|
-| M1 — Agentic Architecture & Orchestration | `questions/domain1_agentic_architecture.js` | 28 |
-| M2 — Tool Design & MCP | `questions/domain2_tool_design_mcp.js` | 28 |
-| M3 — Claude Code Configuration & Workflows | `questions/domain3_claude_code_config.js` | 28 |
-| M4 — Prompt Engineering & Structured Output | `questions/domain4_prompt_engineering.js` | 24 |
-| M5 — Context Management & Reliability | `questions/domain5_context_reliability.js` | 28 |
+| M1 — Agentic Architecture & Orchestration (27%) | `questions/domain1_agentic_architecture.js` | 16 |
+| M2 — Tool Design & MCP (18%) | `questions/domain2_tool_design_mcp.js` | 11 |
+| M3 — Claude Code Configuration & Workflows (20%) | `questions/domain3_claude_code_config.js` | 12 |
+| M4 — Prompt Engineering & Structured Output (20%) | `questions/domain4_prompt_engineering.js` | 12 |
+| M5 — Context Management & Reliability (15%) | `questions/domain5_context_reliability.js` | 9 |
 
 **Scenario coverage:**
 1. Customer Support Resolution Agent
