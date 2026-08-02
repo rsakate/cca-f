@@ -234,6 +234,18 @@ while response.stop_reason == "tool_use":
     <p><b>Structured Data Extraction:</b> When extracting invoice data from an unstructured PDF, the agent calls an extraction tool and gets <code>stop_reason: "tool_use"</code>. It then calls a validation tool to check the output against a JSON schema. If validation fails, the loop continues with a correction tool call — only when the validated result is ready does <code>"end_turn"</code> fire.</p>
   </div>
   <div class="exam-tip">The agentic loop checks <code>stop_reason</code>, NOT a fixed iteration count or natural language like "I'm done". Tool results are appended back as <b>user messages</b> with <code>tool_result</code> blocks. Checking response text for "done" is an <b>anti-pattern</b>.</div>
+  <div class="card" style="margin-top:10px;">
+    <h3>Iterate-Until-Passing Pattern</h3>
+    <p>When generating code, the agentic loop should <b>run tests and auto-fix</b> failures:</p>
+    <div class="flow">
+      <div class="flow-box">Write code</div><span class="flow-arrow">&rarr;</span>
+      <div class="flow-box">Bash: run tests</div><span class="flow-arrow">&rarr;</span>
+      <div class="flow-box">Parse failures</div><span class="flow-arrow">&rarr;</span>
+      <div class="flow-box">Edit fixes</div><span class="flow-arrow">&rarr;</span>
+      <div class="flow-box">Re-run tests</div>
+    </div>
+    <p>Test failures are <b>actionable feedback</b>, not terminal errors. The agent parses Bash output, identifies what failed, uses Read/Edit to fix the code, and loops until tests pass. Same pattern applies to iterative test generation: create test 1 &rarr; verify it runs &rarr; create test 2 &rarr; verify &rarr; etc.</p>
+  </div>
   <div class="warning">If <code>stop_reason</code> is <code>"max_tokens"</code>, the tool call JSON may be truncated mid-way. You must retry with higher <code>max_tokens</code>. Note: <code>"pause_turn"</code> means the server-side loop hit its iteration cap (default 10) &mdash; send the response back to continue.</div>
 </div>
 
@@ -297,8 +309,9 @@ while response.stop_reason == "tool_use":
       <tr><td><b>Orchestrator-Workers</b></td><td>Coordinator dynamically decides which workers to invoke</td><td>Variable tasks requiring dynamic routing</td></tr>
       <tr><td><b>Routing</b></td><td>Classify first, then route to specialized handler</td><td>Input types need different handling</td></tr>
       <tr><td><b>Parallelization</b></td><td>Fan out independent subtasks simultaneously</td><td>Independent work (billing + returns for same customer)</td></tr>
+      <tr><td><b>Dynamic Decomposition</b></td><td>Generate subtasks based on discoveries at each step</td><td>Investigation tasks (tracing a 500 error through routing &rarr; middleware &rarr; DB)</td></tr>
     </table>
-    <div class="exam-tip">For a <b>fixed, repeatable workflow</b> (same 3 checks on every PR), use <b>prompt chaining</b>. For dynamic routing, use orchestrator-workers.</div>
+    <div class="exam-tip">For a <b>fixed, repeatable workflow</b> (same 3 checks on every PR), use <b>prompt chaining</b>. For <b>investigation tasks</b> where each finding changes the plan, use <b>dynamic task decomposition</b>.</div>
   </div>
   <div class="card" style="margin-top:10px;">
     <h3>fork_session</h3>
@@ -395,6 +408,16 @@ class TicketContext:
     <p><b>Customer Support Resolution Agent:</b> A <code>PostToolUse</code> hook enforces that <code>process_refund</code> cannot execute unless <code>get_customer</code> and <code>lookup_order</code> have already been called in the current session. If the agent tries to skip straight to refund processing, the hook blocks the call and returns an error — no amount of prompt engineering can bypass this programmatic gate.</p>
     <p><b>Structured Data Extraction:</b> After extracting fields from an unstructured document, a programmatic gate validates the output against a <b>JSON schema</b> before allowing downstream processing. If required fields like <code>invoice_number</code> or <code>total_amount</code> are missing, the gate blocks the pipeline and forces a retry — this is enforced in code via <code>allowedTools</code>, not by asking the model to "please validate first."</p>
   </div>
+  <div class="card" style="margin-top:10px;">
+    <h3>Tamper-Proof Enforcement Inside the Tool</h3>
+    <p>For business rules like <b>"reimbursements &gt; $500 require manager approval"</b>, the most tamper-proof approach is enforcement <b>within the tool itself</b>:</p>
+    <ul>
+      <li>The <code>process_reimbursement</code> tool checks the amount internally: &le;$500 auto-disburses, &gt;$500 creates a pending approval request</li>
+      <li>This cannot be bypassed by prompt manipulation, agent reasoning, or parameter tampering</li>
+      <li><b>Contrast with weaker approaches:</b> Separate tools with prompt instructions (probabilistic), boolean parameters the agent sets (falsifiable), PreToolUse hooks (external enforcement)</li>
+    </ul>
+    <div class="exam-tip"><b>Hierarchy of enforcement reliability:</b> Tool-internal logic &gt; PreToolUse hooks &gt; allowedTools restriction &gt; System prompt instructions. For the exam, "tamper-proof" = enforcement in code that the agent cannot influence.</div>
+  </div>
   <div class="exam-tip">When the exam asks about "most reliable enforcement" for tool ordering, choose <b>PostToolUse hooks</b> or <b>orchestration code</b> over system prompt rules. Prompts suggest; code enforces. Programmatic = 0% failure; prompts = probabilistic. Agent SDK hooks provide interception at the SDK level.</div>
   <div class="card" style="margin-top:10px;">
     <h3>Agent SDK Hooks for Data Normalization</h3>
@@ -454,10 +477,19 @@ class TicketContext:
       <tr><td><b>One tool + operation param</b></td><td>Operations share the same resource/domain, similar I/O</td><td><code>db_admin(op: "list_tables" | "check_integrity")</code></td></tr>
     </table>
     <p>Split generic tools when their descriptions overlap or when each operation serves a distinct purpose. Keep them combined when they're operations on the same resource with a clear parameter.</p>
+    <h4>When to Split: Invalid Parameter Combinations</h4>
+    <p>If a tool accepts combinations that are semantically invalid (e.g., <code>log_workout</code> accepting "miles" for strength and "reps" for cardio), <b>split it into category-specific tools</b>: <code>log_cardio_workout(duration, distance)</code> and <code>log_strength_workout(sets, reps, weight)</code>. Invalid combinations become impossible because the wrong parameter simply doesn't exist on the tool.</p>
   </div>
   <div class="card" style="margin-top:10px;">
     <h3>Fixing Misrouting</h3>
     <div class="warning">When tool misrouting occurs, <b>improve descriptions FIRST</b> &mdash; before adding classifiers, few-shot examples, or other complexity. Descriptions are the <b>#1 lever</b> for selection reliability. Same model, better tools = better selection.</div>
+    <h4>Disambiguating Similar Tools</h4>
+    <p>When two tools overlap (e.g., <code>summarize_content</code> vs. <code>analyze_document</code>), <b>expand descriptions</b> to include:</p>
+    <ul>
+      <li><b>When to use</b>: "Use for generating brief overviews of known documents"</li>
+      <li><b>When NOT to use</b>: "Do NOT use for detailed analysis — use analyze_document instead"</li>
+      <li><b>Example queries</b>: "'Give me the gist of this paper' → summarize_content; 'What themes and structure does this paper use?' → analyze_document"</li>
+    </ul>
     <h4>Anti-Patterns</h4>
     <ul>
       <li style="color:var(--red);"><b>Near-identical descriptions</b> for different tools (causes confusion)</li>
@@ -469,6 +501,26 @@ class TicketContext:
     <h3>Scenario in Practice</h3>
     <p>In the <b>Customer Support Resolution Agent</b>, tools like <code>get_customer</code>, <code>lookup_order</code>, <code>process_refund</code>, and <code>escalate_to_human</code> each follow the object-action naming pattern with distinct descriptions. If the agent keeps calling <code>lookup_order</code> when it should call <code>get_customer</code>, the fix is to <b>improve the tool descriptions</b> to clarify when each applies, not to add a classifier layer.</p>
     <p>In the <b>Multi-Agent Research System</b>, each subagent (search, analyze, synthesize, report) is scoped to only <b>4-5 tools relevant to its role</b>, preventing the coordinator from accidentally routing a search request to the synthesis agent.</p>
+  </div>
+  <div class="card" style="margin-top:10px;">
+    <h3>Advanced Tool Interface Patterns</h3>
+    <table>
+      <tr><th>Pattern</th><th>Problem It Solves</th><th>Example</th></tr>
+      <tr><td><b>Two-Step Confirmation Token</b></td><td>Agent bypasses preview/dry-run steps for destructive operations</td><td><code>preview_remove_member</code> returns impact + single-use token; <code>execute_remove_member</code> requires that token &mdash; architecturally impossible to skip preview</td></tr>
+      <tr><td><b>ID Lookup Pattern</b></td><td>Ambiguous parameters (nicknames, date formats) cause wrong-item errors</td><td>Replace <code>game_date</code>, <code>home_team</code>, <code>away_team</code> with <code>game_id</code> + a <code>search_games</code> lookup tool returning matching IDs</td></tr>
+      <tr><td><b>Rich Confirmation Response</b></td><td>Users approve destructive actions without understanding what they approved (tool returns only "OK")</td><td>Return structured data: <b>cost estimate, target project, resource specifications, impact summary</b> &mdash; gives the agent information to present meaningful confirmation details</td></tr>
+    </table>
+    <div class="exam-tip"><b>Two-step confirmation tokens</b> create a cryptographic dependency chain: execute requires a token that only preview produces. This is stronger than prompt instructions, orchestration-layer confirmation, or server-side time-based validation.</div>
+  </div>
+  <div class="card" style="margin-top:10px;">
+    <h3>allowedTools for Security Scoping</h3>
+    <p>When a subagent works with <b>sensitive documents</b>, use <code>allowedTools</code> to restrict access to only vetted tools:</p>
+    <ul>
+      <li>Define <code>allowedTools: ["analyze_document"]</code> with explicit read permissions and <b>access logging</b></li>
+      <li>This is a <b>hard boundary</b> &mdash; the subagent literally cannot call tools outside this list</li>
+      <li><b>Do NOT</b> grant access to all tools and trust the subagent to decide what's appropriate</li>
+      <li>MCP server scoping restricts which <b>servers</b> connect; allowedTools restricts which <b>tools within those servers</b> are callable</li>
+    </ul>
   </div>
   <div class="exam-tip">When misrouting occurs, fix <b>tool descriptions first</b> before building classifiers or adding examples. Scope each subagent to <b>4&ndash;5 relevant tools</b>, not the full toolkit.</div>
 </div>
@@ -523,6 +575,16 @@ return {"isError": True, "content": "Max retries exceeded"}</code></pre>
   <div class="card" style="margin-top:10px;">
     <h3>Scenario in Practice</h3>
     <p>In the <b>Structured Data Extraction</b> scenario, when the extraction tool hits a timeout calling a validation API, the error envelope returns <code>{"isError": true, "errorCategory": "transient", "isRetryable": true}</code>, and the agent retries with exponential backoff. But when a document fails JSON schema validation, it returns <code>"errorCategory": "validation"</code> with <code>"isRetryable": false</code>, so the agent stops and reports the specific field mismatch instead of retrying endlessly.</p>
+  </div>
+  <div class="card" style="margin-top:10px;">
+    <h3>Internal Retry vs. Exposing isRetryable</h3>
+    <p>Not all retries should be exposed to the agent. The most effective pattern handles each error type at the <b>appropriate level</b>:</p>
+    <table>
+      <tr><th>Error Type</th><th>Handling</th><th>Agent Sees</th></tr>
+      <tr><td>Network timeouts (transient)</td><td>Automatic retry <b>inside the tool</b> with backoff</td><td>Nothing &mdash; tool succeeds transparently</td></tr>
+      <tr><td>Malformed parameters (permanent)</td><td>Return immediately with validation details</td><td><code>isError: true</code> + parameter fix guidance</td></tr>
+    </table>
+    <p>This avoids burdening the agent with retry decisions for transient errors it can't influence. Only surface errors the agent can <b>act on</b> (e.g., fixing malformed parameters).</p>
   </div>
   <div class="warning">"No data found" is NOT an error &mdash; it's a valid empty result (<code>isError: false</code>). A timeout IS an error that should be retried.</div>
 </div>
@@ -656,8 +718,11 @@ return {"isError": True, "content": "Max retries exceeded"}</code></pre>
         <tr><td>Find files by name</td><td><code>Glob</code></td><td>Bash find</td></tr>
         <tr><td>Run build/test commands</td><td><code>Bash</code></td><td>&mdash;</td></tr>
         <tr><td>Run language analysis</td><td><code>Bash</code></td><td>&mdash;</td></tr>
+      <tr><td>Validate generated files</td><td><code>Glob</code> + <code>Read</code> + <code>Bash</code></td><td>Any single tool alone</td></tr>
       </table>
       <div class="warning">Prefer dedicated tools over Bash. Use Bash only for shell-specific operations (running tests, build tools, git commands).</div>
+      <h4>Validating Generated Code Files</h4>
+      <p>After generating boilerplate, use <b>all three</b>: <code>Glob</code> to verify naming/placement, <code>Read</code> to inspect content, <code>Bash</code> to run linters. Each validates a different dimension.</p>
     </div>
     <div class="card">
       <h3>Error Recovery Strategies</h3>
@@ -667,6 +732,12 @@ return {"isError": True, "content": "Max retries exceeded"}</code></pre>
         <li><b>Fallback:</b> Read the file, then use Write for a complete rewrite (last resort)</li>
         <li><b>Never:</b> Use Bash sed or ask user to edit manually</li>
       </ol>
+      <h4>Edit Fallback: Read &rarr; Write</h4>
+      <p>When Edit fails on <b>repetitive patterns</b> (non-unique old_string), use: <code>Read</code> the file &rarr; modify content in memory &rarr; <code>Write</code> the full updated file.</p>
+      <h4>Multi-File Changes: Loop Pattern</h4>
+      <p>For repetitive changes across many files (e.g., updating an API endpoint in 20 services): <b>Loop</b>: Read each file &rarr; Edit the content &rarr; Read back to verify. Never use Bash find-and-replace across all files at once.</p>
+      <h4>Iterative Refactoring (Large Functions)</h4>
+      <p>For refactoring a 200-line function: use <b>multiple small Edit operations</b>, testing after <b>each change</b>. If a test fails, you know exactly which edit caused it. Don't refactor everything in one Write &mdash; it makes debugging impossible.</p>
       <h4>Post-Write Verification</h4>
       <ul>
         <li>After using Write, <b>always Read the file back</b> to verify content matches expectations</li>
@@ -1087,6 +1158,8 @@ Output: ALLOW | Blunt criticism, not a
   <div class="highlight" style="margin-top:10px;">
     <h4>Few-Shot for Varied Document Formats</h4>
     <p>When extracting from documents with inconsistent formatting (e.g., menus, invoices, resumes), include few-shot examples from <b>different document structures</b> showing how to locate required information regardless of layout. This reduces empty/null extractions for fields that exist but appear in unexpected locations.</p>
+    <h4>Few-Shot for CI Test Generation</h4>
+    <p>When generating tests in a CI pipeline, include <b>several existing test examples</b> in the prompt showing naming conventions, assertion structure, and coverage patterns. This is more effective than describing conventions in text or referencing CLAUDE.md guidelines &mdash; the model learns from concrete examples, not abstract rules.</p>
   </div>
   <div class="warning">Few-shot examples (2&ndash;4 targeted cases) are <b>more effective than detailed procedural instructions</b> for fixing inconsistency. Don't add more instruction text when 2&ndash;3 concrete examples would resolve the issue.</div>
   <div class="card" style="margin-top:10px;">
@@ -1183,6 +1256,16 @@ raise ValueError("Failed after retries")</code></pre>
         <div class="warning">JSON schemas with <code>tool_use</code> eliminate <b>syntax errors</b> (malformed JSON, missing fields) but do <b>NOT prevent semantic errors</b> (wrong values, hallucinated data, incorrect classifications). You still need validation logic to check semantic correctness.</div>
       </div>
     </div>
+  </div>
+  <div class="card" style="margin-top:10px;">
+    <h3>Advanced Schema Design Patterns</h3>
+    <table>
+      <tr><th>Pattern</th><th>When to Use</th><th>Example</th></tr>
+      <tr><td><b>Nested Objects</b></td><td>Line-item data (invoices, orders)</td><td><code>items: [{product_id, quantity, price}]</code> with validation at each level</td></tr>
+      <tr><td><b>Multi-Value with Provenance</b></td><td>Documents with amendments/revisions</td><td>Each extracted value includes <code>source_location</code> and <code>effective_date</code> so downstream systems know which version applies</td></tr>
+      <tr><td><b>Format Normalization</b></td><td>Multiple input formats (phone, dates)</td><td>Accept varied formats + include a <code>normalized</code> version in output alongside the <code>original</code></td></tr>
+      <tr><td><b>Optional/Nullable Fields</b></td><td>Documents with genuinely missing data</td><td>Mark optional fields in schema; <code>null</code> if absent from document (not an error)</td></tr>
+    </table>
   </div>
   <div class="card" style="margin-top:10px;">
     <h3>Scenario in Practice</h3>
@@ -1520,6 +1603,10 @@ response = client.messages.create(
       </table>
       <p>Sessions stored at <code>~/.claude/projects/</code> as JSONL.</p>
       <div class="warning"><b>Resume trade-off:</b> Resuming loads the full prior conversation into context. If the prior session was long, you start with most of the context budget used. A <b>fresh session with a summary</b> gives a clean context window.</div>
+      <h4>Resuming with Changed Files</h4>
+      <p>When resuming a session where source files changed overnight, <b>inform the agent which specific files changed</b> for targeted reanalysis &mdash; don't re-read everything (wasteful) or ignore changes (stale analysis).</p>
+      <h4>Context Overflow &amp; Hallucinations</h4>
+      <p>When a review session grows very large and starts hallucinating, <b>start a fresh session with a summary of prior findings</b> rather than continuing the stale session. Don't use <code>--resume</code> when the accumulated context is the problem.</p>
     </div>
   </div>
   <div class="card" style="margin-top:10px;">
@@ -1586,6 +1673,26 @@ response = client.messages.create(
     </ul>
   </div>
   <div class="card" style="margin-top:10px;">
+    <h3>Accuracy Monitoring Over Time</h3>
+    <p>Extraction accuracy can <b>degrade silently</b> as document formats evolve:</p>
+    <ul>
+      <li><b>Track confidence trends</b> continuously &mdash; if average confidence drops, investigate immediately</li>
+      <li>A gradual decline signals format drift; a sudden drop signals a breaking change</li>
+      <li>Quarterly full re-testing (B) is too slow; manual sampling (D) is too sparse</li>
+      <li>Automated trend monitoring catches problems <b>between</b> manual audits</li>
+    </ul>
+  </div>
+  <div class="card" style="margin-top:10px;">
+    <h3>Segment-Level Validation Before Automation</h3>
+    <p>Before automating high-confidence extractions, <b>aggregate accuracy can mask segment-level failures</b>:</p>
+    <ul>
+      <li>A system 98% accurate overall might be only 60% accurate on a specific document type or field</li>
+      <li><b>Analyze accuracy by document type AND field</b> to confirm consistency across all segments</li>
+      <li>Only then set confidence thresholds for automation</li>
+    </ul>
+    <div class="exam-tip"><b>Building trust with CI/automation:</b> Start with a <b>small set of high-confidence checks</b> and expand gradually as accuracy builds trust. Don't deploy all checks at once &mdash; early wins with precise findings establish credibility.</div>
+  </div>
+  <div class="card" style="margin-top:10px;">
     <h3>Scenario in Practice</h3>
     <p><b>Structured Data Extraction:</b> An extraction pipeline processes medical invoices. The model extracts <code>"name"</code> with 95% confidence but <code>"address"</code> at only 40%. Instead of sending the entire document for human review, the system uses <b>per-field confidence routing</b> &mdash; auto-approving high-confidence fields and flagging only <code>"address"</code> for human verification, reducing reviewer workload by 70%.</p>
     <p><b>Claude Code for CI:</b> During automated code review, a separate Claude instance with <b>fresh context</b> reviews the PR diff independently. This avoids the self-review trap where the same instance rationalizes its original suggestions instead of catching real issues.</p>
@@ -1617,6 +1724,8 @@ response = client.messages.create(
         <li><code>web_search_result_location_citation</code> &mdash; From web search</li>
         <li>Always include <code>quoted_text</code> for verification</li>
       </ul>
+      <h4>Hallucination Detection: <code>required_evidence</code></h4>
+      <p>When models hallucinate data (e.g., dates not in the source), add a <code>required_evidence</code> field to the schema forcing the model to <b>cite where each value appears</b> in the source document. Values without evidence are flagged as potential hallucinations.</p>
     </div>
     <div class="card">
       <h3>Handling Conflicting Sources</h3>

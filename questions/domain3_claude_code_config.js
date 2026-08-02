@@ -1,4 +1,4 @@
-// Domain 3: Claude Code Configuration & Workflows (20% of exam = ~12 questions)
+// Domain 3: Claude Code Configuration & Workflows (20% of exam, 14 questions)
 // Curated question bank covering all 6 task statements:
 //   3.1: CLAUDE.md hierarchy, scoping, @import, .claude/rules/
 //   3.2: Custom slash commands/skills, SKILL.md frontmatter
@@ -139,6 +139,30 @@ QUESTIONS.push(
   ],
   correct:1,
   explanation:"Providing concrete test cases that demonstrate expected naming conventions and duplicate handling gives Claude Code unambiguous examples to follow. This is more effective than vague instructions (Option A), static rules without examples (Option C), or post-hoc fixes that don't address the root cause (Option D)."
+},
+{
+  id:77, module:3, scenario:"Developer Productivity with Claude",
+  text:"Your agent is tasked with refactoring a large function that spans 200 lines. What's the best approach?",
+  options:[
+    "Read the entire function, refactor in one go using Write",
+    "Use multiple small <code>Edit</code> operations to refactor step-by-step, testing after each change",
+    "Generate the refactored version, write it, then read it back to verify",
+    "Use a <code>tool_choice</code> loop: first read and analyze, then propose changes to the user"
+  ],
+  correct:1,
+  explanation:"Multiple small Edit operations with testing between each change is the most reliable approach for large refactors. Each Edit is a focused, verifiable change — if a test fails, you know exactly which edit caused it and can fix it immediately. Option A risks producing a broken file with many issues at once. Option C doesn't verify correctness between steps. Option D requires user interaction for each change, breaking the automated workflow."
+},
+{
+  id:78, module:3, scenario:"Claude Code for Continuous Integration",
+  text:"Your CI test generation system suggests test cases. How can you provide examples to improve consistency in test naming, structure, and coverage patterns?",
+  options:[
+    "Describe test naming conventions and best practices in the prompt",
+    "Reference test generation guidelines in CLAUDE.md",
+    "Include several existing test examples in the prompt showing naming, structure, and comprehensive coverage",
+    "Ask Claude Code to follow the project's testing style"
+  ],
+  correct:2,
+  explanation:"Including actual test examples in the prompt gives Claude Code concrete patterns to follow — exact naming conventions, assertion styles, edge case coverage, and file structure. This is few-shot prompting applied to test generation. Describing conventions (A) is vague. CLAUDE.md references (B) provide rules but not concrete patterns. Asking to follow style (D) gives no specifics about what that style looks like."
 },
 {
   id:39, module:3, scenario:"Claude Code for Continuous Integration",

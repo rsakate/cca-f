@@ -1,8 +1,10 @@
-// Domain 5: Context Management & Reliability (15% of exam — ~9 questions)
+// Domain 5: Context Management & Reliability (15% of exam, 14 questions)
 // Covers: 5.1 context preservation, 5.2 token optimization,
 // 5.3 prompt caching, 5.4 error propagation, 5.5 human review & confidence,
 // 5.6 information provenance & uncertainty
 // IDs 52–60 (domain 4 ends at 51)
+// + Mock Test 3: segment-level validation (Q71), hallucination evidence (Q72), changed-file resumption (Q73),
+//   accuracy monitoring (Q79), multi-tool validation (Q80)
 QUESTIONS.push(
 {
   id:52, module:5, scenario:"Customer Support Resolution Agent",
@@ -111,5 +113,66 @@ QUESTIONS.push(
   ],
   correct:1,
   explanation:"Coverage annotations explicitly mark which sections are well-supported and which have gaps. Rather than hiding incomplete coverage (A) or blocking on retries (C), the report transparently communicates what it knows well and where gaps exist. This lets the reader make informed decisions about which findings to trust."
+},
+// --- Questions from Mock Test 3 (unique concepts) ---
+{
+  id:71, module:5, scenario:"Structured Data Extraction",
+  text:"Your extraction system has operated with full human review for months. High-confidence extractions appear highly accurate overall, and you want to automate those cases. Before deploying, what validation step is most critical?",
+  options:[
+    "Analyze accuracy by document type and field to confirm high-confidence performance is consistent across segments",
+    "Compare accuracy at different confidence thresholds to find an optimal cutoff",
+    "Verify that aggregate accuracy meets downstream requirements",
+    "Run a pilot that routes some high-confidence extractions directly downstream and monitor reports"
+  ],
+  correct:0,
+  explanation:"Aggregate accuracy can mask segment-level failures. A system that's 98% accurate overall might be only 60% accurate on a specific document type or field. Before automating, you must verify that high-confidence performance is consistent across all segments (document types, fields, edge cases). Threshold comparison (B) and aggregate verification (C) don't catch segment disparities. A pilot (D) is a good follow-up step but should come after segment analysis."
+},
+{
+  id:72, module:5, scenario:"Structured Data Extraction",
+  text:"Your extraction model is hallucinating dates — creating dates that don't appear in the source document. How should you address this?",
+  options:[
+    "Use validation to reject dates that don't match document patterns",
+    "Add a <code>required_evidence</code> field to the schema; dates without source evidence are flagged as hallucinations",
+    "Accept the hallucinations; downstream systems can validate",
+    "Add a note in the system prompt: 'Do not hallucinate dates'"
+  ],
+  correct:1,
+  explanation:"A required_evidence field forces the model to cite where in the source document each date appears. Dates without evidence are flagged as potential hallucinations, enabling automated detection. Pattern-based validation (A) can miss novel hallucinations that look plausible. Downstream validation (C) passes the problem along. Prompt instructions (D) are probabilistic and cannot guarantee compliance."
+},
+{
+  id:73, module:5, scenario:"Developer Productivity with Claude",
+  text:"A codebase exploration tool stores session IDs so engineers can continue investigations. An engineer wants to resume a prior session, but some previously read files changed overnight. What approach best balances efficiency and accuracy?",
+  options:[
+    "Resume and immediately re-read all previously analyzed files",
+    "Start a completely new session from scratch",
+    "Resume without mentioning the changed files",
+    "Resume and inform the agent which specific files changed for targeted reanalysis"
+  ],
+  correct:3,
+  explanation:"Informing the agent which specific files changed enables targeted reanalysis — the agent re-reads only what's different rather than everything. This balances efficiency (no full re-read) with accuracy (stale analysis is refreshed). Re-reading everything (A) is wasteful when most files haven't changed. A new session (B) loses all prior context. Ignoring changes (C) risks acting on stale analysis."
+},
+{
+  id:79, module:5, scenario:"Structured Data Extraction",
+  text:"Your extraction system must maintain accuracy over time as documents evolve. What monitoring approach helps detect degradation?",
+  options:[
+    "Assume accuracy stays constant",
+    "Re-test the full sample suite quarterly against the current model",
+    "Track extraction confidence trends; if average confidence drops, investigate",
+    "Sample extractions monthly and manually compare against prior results to detect drift"
+  ],
+  correct:2,
+  explanation:"Tracking confidence trends provides continuous, automated monitoring. A sudden or gradual confidence drop signals that document formats or content patterns have shifted, triggering investigation before accuracy degrades significantly. Option A ignores drift entirely. Option B checks only quarterly — too slow to catch emerging issues. Option D is labor-intensive and infrequent compared to automated trend monitoring."
+},
+{
+  id:80, module:5, scenario:"Developer Productivity with Claude",
+  text:"Your agent generates boilerplate code files that should follow specific naming conventions and be placed in specific directories. How should you ensure correctness?",
+  options:[
+    "Use <code>Bash</code> to run linters or validation scripts that check naming and placement",
+    "All of the above — use Glob to verify files exist with correct names, Read to inspect content, and Bash to run linters",
+    "Generate files without validation; rely on users to verify",
+    "Use <code>Glob</code> to check if files with correct naming exist, then verify via <code>Read</code>"
+  ],
+  correct:1,
+  explanation:"A comprehensive validation approach combines multiple built-in tools: Glob to verify files were created with correct naming patterns, Read to inspect that file content matches templates, and Bash to run linters or validation scripts for language-specific checks. Each tool validates a different aspect — name/location (Glob), content (Read), and code quality (Bash). Using only one tool or skipping validation entirely misses failure modes."
 }
 );

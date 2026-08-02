@@ -1,7 +1,10 @@
-// Domain 2: Tool Design & MCP Integration (18% of exam, ~11 questions)
+// Domain 2: Tool Design & MCP Integration (18% of exam, 18 questions)
 // Covers: 2.1 tool descriptions/boundaries, 2.2 structured errors, 2.3 tool distribution/tool_choice,
 // 2.4 MCP servers (.mcp.json, resources), 2.5 built-in tools (Read, Write, Edit, Bash, Grep, Glob)
 // IDs 17-27 (domain 1 ends at 16)
+// + Mock Test 3: two-step confirmation token (Q64), ID lookup pattern (Q65),
+//   internal retry (Q66), Edit fallback to Read+Write (Q67),
+//   split tool by category (Q74), rich confirmation details (Q75), disambiguating similar tools (Q76)
 QUESTIONS.push(
 {
   id:17, module:2, scenario:"Customer Support Resolution Agent",
@@ -134,5 +137,90 @@ QUESTIONS.push(
   ],
   correct:1,
   explanation:"The incremental exploration pattern (Glob to find files -> Read to inspect relevant ones -> Edit to change) keeps the context window focused on what matters. Loading everything upfront ('just in case') wastes context on irrelevant files, potentially pushing important content out of the model's attention window. This is especially critical for large codebases."
+},
+// --- Questions from Mock Test 3 (unique concepts) ---
+{
+  id:64, module:2, scenario:"Multi-Agent Research System",
+  text:"Your <code>remove_team_member</code> tool uses a <code>dry_run</code> parameter for previewing impacts before execution, but the agent sometimes bypasses the preview step. You need to ensure every removal is preceded by a preview that the user explicitly confirms. What is the most reliable approach?",
+  options:[
+    "Add detailed instructions and few-shot examples telling the agent to always call dry_run first",
+    "Annotate the tool as requiring confirmation and rely on the orchestration layer to prompt the user",
+    "Add server-side validation that permits execution only if an identical preview occurred recently",
+    "Replace with a two-step flow: <code>preview_remove_member</code> returns impact details and a single-use confirmation token, and <code>execute_remove_member</code> requires that token"
+  ],
+  correct:3,
+  explanation:"The two-step confirmation token pattern makes it architecturally impossible to execute without previewing first. The execute step requires a token that only the preview step produces, creating a cryptographic dependency chain. Prompt instructions (A) are probabilistic — the agent can still skip them. Orchestration-layer confirmation (B) doesn't guarantee the preview step ran. Server-side validation (C) is weaker than token-based linking since it relies on time-based matching rather than direct cryptographic coupling."
+},
+{
+  id:65, module:2, scenario:"Multi-Agent Research System",
+  text:"Your <code>update_game_score</code> tool accepts <code>game_date</code>, <code>home_team</code>, and <code>away_team</code>, but production logs show issues with nicknames, date formats, and selecting the wrong game when teams have rematches. What interface change would most effectively prevent these errors?",
+  options:[
+    "Add <code>season</code> and <code>confirm_before_update</code> parameters",
+    "Replace the parameters with a <code>game_id</code> and a separate <code>search_games</code> lookup tool that returns matching IDs",
+    "Add enum constraints for team names and a regex pattern for the date",
+    "Add detailed examples showing the required date format and complete list of official team names"
+  ],
+  correct:1,
+  explanation:"Replacing ambiguous parameters (team names, dates) with a unique game_id and a separate search_games lookup tool eliminates the class of errors entirely. The lookup returns candidate games the user can confirm, and the update uses an unambiguous ID. Adding constraints (C) still allows format edge cases. Examples (D) help but can't cover all nicknames. Additional parameters (A) add complexity without solving disambiguation."
+},
+{
+  id:66, module:2, scenario:"Multi-Agent Research System",
+  text:"Your <code>search_catalog</code> tool fails sometimes due to network timeouts that often succeed on retry and sometimes due to malformed user filters that never succeed on retry. Currently both errors are returned identically. How should the tool's error handling be modified?",
+  options:[
+    "Add few-shot examples to the system prompt explaining how to handle different error types",
+    "Apply exponential backoff retries to all errors uniformly",
+    "Return all errors with a <code>retryable</code> boolean and error type details",
+    "Implement automatic retry with backoff for network timeouts inside the tool and return syntax errors immediately with parameter validation details"
+  ],
+  correct:3,
+  explanation:"The most effective approach handles each error type at the appropriate level: transient network errors are retried internally (the agent never needs to know), while permanent errors like malformed filters are returned immediately with clear validation details so the agent can fix the parameters. Option B wastes time retrying permanent errors. Option C exposes transient retry logic to the agent unnecessarily. Option A relies on prompt-based guidance."
+},
+{
+  id:67, module:2, scenario:"Developer Productivity with Claude",
+  text:"Your agent needs to insert a helper function into the middle of a utility module, but the <code>Edit</code> tool cannot find unique text to match because the file contains repetitive patterns. What is the most reliable way to complete the insertion?",
+  options:[
+    "Use Edit with a very long <code>old_string</code> to try to force uniqueness",
+    "Use <code>Read</code> to load the file, insert the function in the right place, then <code>Write</code> the updated file",
+    "Append the function at the end of the file using Bash",
+    "Use <code>replace_all</code> and embed the new function in the replacement text"
+  ],
+  correct:1,
+  explanation:"When Edit fails due to non-unique text patterns, the reliable fallback is Read→modify→Write. Read loads the full file content, you insert the function at the correct position, and Write replaces the file. Option A may still fail if the surrounding context is also repetitive. Option C puts the function in the wrong location. Option D replaces all instances of a pattern, which could cause unintended changes throughout the file."
+},
+{
+  id:74, module:2, scenario:"Multi-Agent Research System",
+  text:"Your <code>log_workout</code> tool accepts <code>exercise_type</code>, <code>value</code>, and <code>measurement</code>, and the agent frequently passes invalid combinations such as reps for cardio and miles for strength exercises. What would most effectively reduce these errors?",
+  options:[
+    "Split the interface into <code>log_cardio_workout</code> and <code>log_strength_workout</code> with parameters appropriate to each category",
+    "Implement server-side validation with descriptive error messages",
+    "Add enum constraints on the measurement field",
+    "Add explicit examples to the tool description showing valid combinations"
+  ],
+  correct:0,
+  explanation:"Splitting into category-specific tools eliminates invalid combinations at the interface level. log_cardio_workout only accepts duration/distance parameters; log_strength_workout only accepts sets/reps. The agent can't mix them because the wrong parameter simply doesn't exist on the tool. Server-side validation (B) catches errors after the fact. Enum constraints (C) still allow mismatches between exercise type and measurement. Examples (D) are probabilistic guidance."
+},
+{
+  id:75, module:2, scenario:"Multi-Agent Research System",
+  text:"Your resource allocation tool returns only a simple acknowledgment after provisioning is requested. Users often confirm without understanding what they approved. What design change would most effectively address this?",
+  options:[
+    "Add a <code>user_acknowledged</code> boolean parameter that must be set true",
+    "Add a <code>detail_level</code> parameter controlling how much context the agent presents",
+    "Return structured data including cost estimate, target project, resource specifications, and impact summary",
+    "Implement a hold period before execution completes"
+  ],
+  correct:2,
+  explanation:"Returning structured details (cost, project, specs, impact) gives the agent the information needed to present a meaningful confirmation to the user. Users can then make informed decisions rather than blindly approving. A boolean parameter (A) doesn't add information. A detail_level parameter (B) puts the burden on the agent to choose. A hold period (D) delays but doesn't inform."
+},
+{
+  id:76, module:2, scenario:"Multi-Agent Research System",
+  text:"Your document analysis subagent has access to both a <code>summarize_content</code> and <code>analyze_document</code> tool. The model frequently calls <code>summarize_content</code> when <code>analyze_document</code> would be more appropriate. Why is this happening and how do you fix it?",
+  options:[
+    "The model is hallucinating; add error handling to reject summarize_content calls",
+    "The tool descriptions are ambiguous — expand them to clarify when to use each tool and provide example queries for each",
+    "The subagent's system prompt doesn't mention analyze_document; add it explicitly",
+    "Restrict the subagent to only the analyze_document tool using allowedTools"
+  ],
+  correct:1,
+  explanation:"When two tools have overlapping descriptions, the model can't reliably distinguish when to use each. The fix is expanding descriptions to clarify boundaries: 'summarize_content — for generating brief overviews of known documents. Do NOT use for detailed analysis' vs. 'analyze_document — for deep analysis including themes, structure, and key findings. Use when the user needs detailed understanding.' Adding example queries for each reinforces the distinction. Option D removes a useful tool. Option C is insufficient — system prompts don't fix ambiguous tool definitions."
 }
 );

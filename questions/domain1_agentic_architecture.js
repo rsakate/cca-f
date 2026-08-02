@@ -1,9 +1,10 @@
 // Domain 1: Agentic Architecture & Orchestration (27% of exam)
-// 16 curated questions covering all 7 task statements:
+// 19 curated questions covering all 7 task statements:
 // 1.1 Agentic loops (Q1-Q4), 1.2 Multi-agent patterns (Q5-Q6),
 // 1.3 Subagent invocation & allowedTools (Q7-Q8), 1.4 Multi-step enforcement (Q9-Q10),
 // 1.5 Agent SDK hooks (Q11), 1.6 Task decomposition (Q12-Q13),
 // 1.7 Session state & resumption (Q14-Q16)
+// + Mock Test 3: tamper-proof enforcement (Q61), dynamic decomposition (Q62), agentic test loop (Q63)
 QUESTIONS.push(
 {
   id:1, module:1, scenario:"Customer Support Resolution Agent",
@@ -196,5 +197,42 @@ QUESTIONS.push(
   ],
   correct:2,
   explanation:"The --resume flag is specifically designed to continue an existing Claude Code session with all previous context intact. This preserves the refactoring progress, tool results, and conversation history so work can continue seamlessly. Saving output as a new prompt (A) loses tool state and conversation context. Manually repeating steps (B) is inefficient and error-prone. fork_session (D) creates a branch for parallel exploration, not for simple pause-and-resume of a single workflow."
+},
+// --- Questions from Mock Test 3 (unique concepts) ---
+{
+  id:61, module:1, scenario:"Multi-Agent Research System",
+  text:"Your expense reimbursement agent uses a <code>process_reimbursement</code> tool. Policy requires reimbursements above $500 to be manager-approved before funds are disbursed, and the threshold enforcement must be tamper-proof. Which design ensures the $500 threshold cannot be bypassed?",
+  options:[
+    "Provide separate tools for auto-reimburse and request-manager-approval, with prompt instructions telling the agent which to call",
+    "Use an <code>approved_by_manager</code> boolean parameter and tell the agent to set it only after approval",
+    "Use a PreToolUse hook that inspects the amount and modifies the tool call to add a <code>requires_approval</code> flag",
+    "Have <code>process_reimbursement</code> enforce the threshold internally — auto-disbursing amounts at or below $500 and creating a pending approval request for larger amounts"
+  ],
+  correct:3,
+  explanation:"The most tamper-proof approach is enforcement within the tool itself. The tool checks the amount programmatically: ≤$500 auto-disburses, >$500 creates a pending approval. This cannot be bypassed by prompt manipulation or agent reasoning. Separate tools with prompt instructions (A) rely on probabilistic agent behavior. A boolean parameter (B) can be set incorrectly by the agent. A PreToolUse hook (C) adds enforcement but the tool-internal approach is the most self-contained and tamper-proof."
+},
+{
+  id:62, module:1, scenario:"Developer Productivity with Claude",
+  text:"A developer asks the agent to investigate why a specific API endpoint intermittently returns 500 errors. The codebase is large and the error must be traced through routing, middleware, business logic, and database layers. What task decomposition approach would be most effective?",
+  options:[
+    "Run parallel workers for all layers from the start and synthesize the results",
+    "Dynamically generate investigation subtasks based on discoveries at each step and adapt the plan as new information emerges",
+    "Create a comprehensive plan mapping all code paths before reading any files",
+    "Use a fixed investigation sequence regardless of what intermediate findings show"
+  ],
+  correct:1,
+  explanation:"Dynamic task decomposition is ideal for investigation-type tasks where each step's findings inform the next. Finding a null check failure in middleware might redirect investigation to the database layer — a rigid plan can't anticipate this. Option A wastes resources investigating irrelevant layers. Option C adds overhead without value since you can't plan what you don't know. Option D ignores findings that should change the approach."
+},
+{
+  id:63, module:1, scenario:"Developer Productivity with Claude",
+  text:"When your agent uses <code>Bash</code> to run tests during code generation, how should it handle test failures in the agentic loop?",
+  options:[
+    "Parse the test output, identify the failure reason, and attempt to fix the code automatically before re-running tests",
+    "Show the failure output to the user and ask them to fix it",
+    "Ignore failures and assume the code works",
+    "Use <code>tool_choice: 'any'</code> to force a tool call that understands the failure"
+  ],
+  correct:0,
+  explanation:"In an agentic loop, test failures are actionable feedback. The agent should parse Bash output to understand what failed, then use Read and Edit to fix the code, and re-run tests to verify — this is the core iterate-until-passing pattern. Option B breaks the autonomous workflow. Option C produces broken code. Option D misuses tool_choice for a problem that needs code analysis, not tool forcing."
 }
 );

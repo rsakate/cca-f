@@ -1,7 +1,8 @@
-// Domain 4: Prompt Engineering & Structured Output (20% of exam = ~12 questions)
+// Domain 4: Prompt Engineering & Structured Output (20% of exam, 15 questions)
 // Covers: 4.1 explicit criteria, 4.2 few-shot prompting, 4.3 tool_use/JSON schemas,
 // 4.4 validation/retry loops, 4.5 batch processing, 4.6 multi-instance/multi-pass review
 // IDs 40-51 (domain 3 ends at 39)
+// + Mock Test 3: amendments schema (Q68), nested JSON schema (Q69), building trust (Q70)
 QUESTIONS.push(
 // --- 4.1: Explicit criteria to improve precision and reduce false positives ---
 {
@@ -152,5 +153,42 @@ QUESTIONS.push(
   ],
   correct:0,
   explanation:"Per-file analysis first, then cross-file integration checks, structures the review into manageable passes. This prevents context overload from analyzing hundreds of files at once and produces more focused, accurate feedback at each level."
+},
+// --- Questions from Mock Test 3 (unique concepts) ---
+{
+  id:68, module:4, scenario:"Structured Data Extraction",
+  text:"Your extraction pipeline processes contracts with amendments. The model inconsistently extracts either the original term or the amended term, with no indication of which applies. What is the most effective approach?",
+  options:[
+    "Implement post-extraction validation to detect amendments and flag those cases for review",
+    "Redesign the schema so amended fields can capture multiple values, each with source location and effective date",
+    "Preprocess documents to remove superseded sections before extraction",
+    "Add prompt instructions to always extract the most recent amendment value and ignore superseded terms"
+  ],
+  correct:1,
+  explanation:"Redesigning the schema to capture multiple values with source location and effective date handles amendments structurally. Each extracted value carries provenance (where in the document, when effective), letting downstream systems determine which applies. Option A catches problems but doesn't fix them. Option C risks losing important historical context. Option D forces a single-value choice that may not be appropriate for all use cases."
+},
+{
+  id:69, module:4, scenario:"Structured Data Extraction",
+  text:"Your extraction system needs to extract nested data (e.g., invoice items with line-item details). How should the schema handle this?",
+  options:[
+    "Extract only top-level fields; nested data is too complex",
+    "Ask the user to specify nesting structure for each document",
+    "Flatten nested data into separate fields",
+    "Use nested objects in JSON schema: <code>items</code> (array of <code>{product_id, quantity, price}</code>) with validation at each level"
+  ],
+  correct:3,
+  explanation:"JSON schema natively supports nested objects and arrays. Defining items as an array of objects with typed, validated fields at each level preserves the natural structure of the data. Flattening (C) loses relationships between line-item fields. Avoiding nesting (A) misses critical data. User-specified structure (B) doesn't scale."
+},
+{
+  id:70, module:4, scenario:"Claude Code for Continuous Integration",
+  text:"Your team wants to use Claude Code for code review but worries about false positives creating noise. Which strategy is most effective for building trust?",
+  options:[
+    "Run preview mode first, then apply findings manually",
+    "Start with a small set of high-confidence checks, expand gradually as accuracy builds trust",
+    "Implement all possible checks immediately to maximize coverage",
+    "Use manual approval for all findings to ensure accuracy"
+  ],
+  correct:1,
+  explanation:"Starting with a small set of high-confidence checks builds developer trust incrementally. Early wins with accurate, actionable findings establish credibility. As the team sees value, you expand to additional check categories. Implementing everything at once (C) overwhelms with false positives and erodes trust. Preview mode (A) adds friction without building confidence in automated findings. Manual approval (D) doesn't scale."
 }
 );
