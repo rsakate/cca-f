@@ -1331,7 +1331,23 @@ else:
     <p><b>Multi-Agent Research System (Scenario 3):</b> The coordinator queues all subagent tasks &mdash; search, analyze, synthesize &mdash; as a single <b>Message Batch</b> to get <b>50% cost savings</b>. Since each subagent request is independent, batch processing is ideal. Results are correlated using <code>custom_id</code> fields like <code>"search-q1"</code> and <code>"analyze-q1"</code>, then fed to the report subagent synchronously.</p>
     <p><b>Claude Code for CI (Scenario 5):</b> Nightly test generation across 200 source files uses the Batch API for cost efficiency. However, <b>pre-merge code review checks remain synchronous</b> &mdash; routing them through the Batch API would block PRs for up to 24 hours, violating the team's merge SLA.</p>
   </div>
-  <div class="exam-tip">Batch API gives <b>50% cost savings</b> and stacks with caching for up to <b>95% savings</b>. But never batch time-sensitive operations like pre-merge CI checks &mdash; those must be synchronous.</div>
+  <div class="card" style="margin-top:10px;">
+    <h3>Two-Phase Batch Strategy (Cost-Optimal for Large-Scale Extraction)</h3>
+    <p>When processing thousands of documents under a deadline:</p>
+    <ol>
+      <li><b>Phase 1 &mdash; Real-time API on a representative sample:</b> Fast iteration, instant feedback. Identify failure patterns and refine prompts until failure rate is low. Costs very little (small sample).</li>
+      <li><b>Phase 2 &mdash; Batch API for the full volume:</b> Submit all documents with optimized prompts. 50% cost savings. Most pass on the first run because prompts are already refined.</li>
+    </ol>
+    <h4>Why Not Other Strategies?</h4>
+    <table>
+      <tr><th>Strategy</th><th>Problem</th></tr>
+      <tr><td>Batch all first, rebatch failures</td><td>Unrefined prompts &rarr; high failure rate &rarr; expensive multi-round rebatching</td></tr>
+      <tr><td>Sequential batches with refinement</td><td>Batch API has up to 24-hour SLA &mdash; waiting between batches wastes deadline time</td></tr>
+      <tr><td>Real-time API for everything</td><td>2&times; the cost of batch &mdash; no savings at scale</td></tr>
+    </table>
+    <p><b>Key insight:</b> Use real-time for <em>iteration speed</em>, batch for <em>cost savings at scale</em>. Don't batch with unrefined prompts &mdash; you'll pay for failures.</p>
+  </div>
+  <div class="exam-tip">Batch API gives <b>50% cost savings</b> and stacks with caching for up to <b>95% savings</b>. But never batch time-sensitive operations like pre-merge CI checks &mdash; those must be synchronous. For large-scale extraction, always <b>refine prompts on a sample first</b> (real-time), then batch the full volume.</div>
 </div>
 
 <!-- SLIDE 20B: Validation, Retry & Self-Correction (NEW) -->
