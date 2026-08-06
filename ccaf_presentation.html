@@ -1781,6 +1781,141 @@ response = client.messages.create(
   <div class="exam-tip">Never silently pick one conflicting source. Present <b>both</b> with publication dates and let the reviewer decide. Distinguish confirmed, contested, and single-source claims. Always require <b>temporal context</b> in structured outputs.</div>
 </div>
 
+<!-- SLIDE 27B: Extraction System Production Patterns -->
+<div class="slide" id="s27b">
+  <h2>5.7 &mdash; Extraction System Production Patterns</h2>
+  <div class="two-col">
+    <div class="card">
+      <h3>PII Handling & Compliance Metadata</h3>
+      <p>Extraction schemas for regulated documents must include compliance metadata alongside extracted values:</p>
+<pre><code>{
+  "customer_name": "Jane Doe",
+  "ssn": "***-**-1234",
+  "pii_detected": true,
+  "minimal_retention_period": "7_years",
+  "access_control_required": "restricted",
+  "encryption_required": true
+}</code></pre>
+      <ul>
+        <li>Add <b>PII detection flags</b> per field &mdash; downstream systems use these for access control</li>
+        <li>Include <b>retention period</b> and <b>encryption requirements</b> as metadata</li>
+        <li>For multi-level validation (legal contracts), validate at field, document, and cross-document levels</li>
+        <li>Set <b>source-type-aware confidence thresholds</b> &mdash; scanned/OCR documents get lower baseline confidence</li>
+      </ul>
+      <h4>OCR & Document Quality</h4>
+      <p>For blurry/scanned/multi-language documents: preprocess with OCR and image enhancement <b>before</b> extraction. Track preprocessing steps in metadata so downstream systems know the confidence baseline.</p>
+    </div>
+    <div class="card">
+      <h3>Per-Field Extraction Status</h3>
+      <p>Go beyond simple pass/fail &mdash; track extraction outcome per field:</p>
+<pre><code>{
+  "invoice_number": {
+    "value": "INV-2024-001",
+    "extraction_status": "success",
+    "confidence": 0.98
+  },
+  "payment_terms": {
+    "value": null,
+    "extraction_status": "not_found",
+    "confidence": null
+  },
+  "effective_date": {
+    "value": "2024-03-15",
+    "extraction_status": "ambiguous",
+    "confidence": 0.65,
+    "alternatives": ["2024-03-15", "2024-04-01"]
+  }
+}</code></pre>
+      <p>Status values: <code>success</code>, <code>not_found</code>, <code>ambiguous</code>, <code>extraction_failed</code></p>
+      <h4>Field-Specific Confidence Thresholds</h4>
+      <ul>
+        <li><b>Critical fields</b> (amounts, dates, IDs): require 95%+ confidence</li>
+        <li><b>Optional fields</b> (notes, descriptions): accept 70%+</li>
+        <li>Don't use a uniform threshold &mdash; field importance drives the cutoff</li>
+      </ul>
+    </div>
+  </div>
+  <div class="card" style="margin-top:10px;">
+    <h3>Dual-Format Output for Multiple Consumers</h3>
+    <p>When extracted data serves both humans and machines, structure output for both:</p>
+    <table>
+      <tr><th>Pattern</th><th>Example</th><th>Use Case</th></tr>
+      <tr><td><b>Human + System</b></td><td><code>extracted_for_human</code> (readable) + <code>extracted_for_system</code> (normalized)</td><td>Dashboard display + API integration</td></tr>
+      <tr><td><b>Original + Parsed</b></td><td><code>original_text</code> + <code>parsed_value</code> + <code>parsing_confidence</code></td><td>Audit trail with traceability</td></tr>
+      <tr><td><b>Contradiction Detection</b></td><td><code>detected_contradiction: true</code> with both conflicting values preserved</td><td>Legal contracts with amendments</td></tr>
+      <tr><td><b>Pre-computed Normalizations</b></td><td>Multiple date/currency formats in one output</td><td>Multi-region downstream systems</td></tr>
+    </table>
+  </div>
+  <div class="card" style="margin-top:10px;">
+    <h3>Systematic Error Recovery</h3>
+    <table>
+      <tr><th>Scenario</th><th>Response</th></tr>
+      <tr><td>Inconsistent extraction results</td><td>Investigate root cause (don't accept as normal) &rarr; identify pattern &rarr; fix logic &rarr; re-process affected documents &rarr; track corrections</td></tr>
+      <tr><td>Extraction error logging</td><td>Log: error type, document ID, extraction attempt count, timestamp, failure reason</td></tr>
+      <tr><td>Shared validation rules</td><td>Use a <b>validation service</b> callable by both extraction and downstream &mdash; single source of truth</td></tr>
+    </table>
+  </div>
+  <div class="exam-tip">Extraction questions test <b>production-grade patterns</b>: per-field status tracking, field-specific thresholds, PII compliance metadata, dual-format outputs, and systematic error recovery. Always prefer structured metadata over simple pass/fail.</div>
+</div>
+
+<!-- SLIDE 27C: Agent Reliability & Operational Patterns -->
+<div class="slide" id="s27c">
+  <h2>5.8 &mdash; Agent Reliability & Operational Patterns</h2>
+  <div class="two-col">
+    <div class="card">
+      <h3>Multi-Issue State Tracking</h3>
+      <p>When a single conversation involves multiple issues (e.g., customer has 3 open complaints), maintain explicit state:</p>
+<pre><code>[OPEN ISSUES]
+1. Refund for ORD-5521 - Status: PENDING
+   Action: Awaiting manager approval
+2. Shipping delay ORD-5534 - Status: RESOLVED
+   Action: Expedited replacement sent
+3. Billing dispute INV-8891 - Status: INVESTIGATING
+   Action: Need transaction records</code></pre>
+      <p>This goes beyond single-issue CASE FACTS &mdash; track <b>per-issue status</b> to prevent dropping issues during long conversations.</p>
+      <h4>Multi-Phase Coordinator State</h4>
+      <ul>
+        <li>After each phase, the coordinator <b>summarizes findings</b> and <b>tracks gaps</b></li>
+        <li>Maintains a structured state object across phases (not just conversation history)</li>
+        <li>Prevents context degradation in long multi-phase workflows</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Agent Performance Metrics</h3>
+      <p>Measure agent effectiveness with operational metrics:</p>
+      <table>
+        <tr><th>Metric</th><th>What It Measures</th></tr>
+        <tr><td><b>First-contact resolution rate</b></td><td>% issues resolved without escalation</td></tr>
+        <tr><td><b>Escalation rate</b></td><td>% conversations escalated to human</td></tr>
+        <tr><td><b>Refund accuracy</b></td><td>% refunds applied correctly</td></tr>
+        <tr><td><b>Customer satisfaction</b></td><td>Post-resolution survey scores</td></tr>
+      </table>
+      <h4>Defense-in-Depth Reliability</h4>
+      <p>Layer multiple safeguards for critical workflows:</p>
+      <ol>
+        <li><b>Validation hooks</b> (PreToolUse) &mdash; catch errors before they happen</li>
+        <li><b>Post-resolution audits</b> &mdash; verify correctness after the fact</li>
+        <li><b>Feedback loops</b> &mdash; human escalation resolutions fed back to improve agent prompts</li>
+      </ol>
+      <p>Target an <b>acceptable error rate</b> (e.g., &lt;2%) rather than perfection.</p>
+    </div>
+  </div>
+  <div class="card" style="margin-top:10px;">
+    <h3>Additional Exam Patterns</h3>
+    <table>
+      <tr><th>Pattern</th><th>Key Point</th></tr>
+      <tr><td><b>Immediate escalation</b></td><td>When customer explicitly asks for a human agent &rarr; escalate <b>immediately</b>, no further investigation</td></tr>
+      <tr><td><b>Plan mode in CI</b></td><td>Skip plan mode in CI pipelines &mdash; no human to review the plan, adds unnecessary latency</td></tr>
+      <tr><td><b>MCP server caching</b></td><td>Cache repeated queries at the MCP server level with TTL &mdash; reduces redundant API calls</td></tr>
+      <tr><td><b>In-context few-shot</b></td><td>Inject examples <b>into the conversation</b> (not just system prompt) for edge cases the agent just encountered</td></tr>
+      <tr><td><b>Good AND bad examples</b></td><td>Few-shot should include both <b>correct outputs</b> and <b>common mistakes</b> with corrections</td></tr>
+      <tr><td><b>Schema inheritance</b></td><td>Use a <b>base schema</b> with type-specific extensions for similar document types (invoices vs. receipts vs. bills)</td></tr>
+      <tr><td><b>Semantic validation</b></td><td>Beyond schema: price ranges, email patterns, cross-field consistency (total = sum of line items)</td></tr>
+    </table>
+  </div>
+  <div class="exam-tip">When choosing between "escalate" and "investigate further" &mdash; if the customer <b>explicitly asks for a human</b>, always escalate immediately. For reliability questions, look for <b>layered safeguards</b> (hooks + audits + feedback) rather than single-point solutions.</div>
+</div>
+
 <!-- SLIDE 28: Hooks -->
 <div class="slide" id="s28">
   <h2>B.1 &mdash; Hooks System Deep Dive</h2>
