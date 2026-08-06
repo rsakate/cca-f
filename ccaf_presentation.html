@@ -179,6 +179,7 @@
       <h3>Bonus</h3>
       <ul class="toc">
         <li onclick="goTo(28)"><span class="module-num">B.1</span> Hooks System Deep Dive</li>
+        <li onclick="goTo('28b')"><span class="module-num">B.1b</span> PreToolUse vs PostToolUse Guide</li>
         <li onclick="goTo(29)"><span class="module-num">B.2</span> Exam Scenarios & Core Principles</li>
         <li onclick="goTo(30)"><span class="module-num">B.3</span> Quick Reference Cheat Sheet</li>
       </ul>
@@ -1967,6 +1968,91 @@ response = client.messages.create(
     </div>
   </div>
   <div class="exam-tip"><code>PreToolUse</code> hooks with <b>exit code 2</b> are the way to <b>block</b> dangerous operations. Exit code 1 does NOT block &mdash; only exit code 2 blocks and sends stderr to Claude as feedback. <code>PostToolUse</code> hooks enforce ordering (verify prerequisites were called).</div>
+</div>
+
+<!-- SLIDE 28B: PreToolUse vs PostToolUse Decision Guide -->
+<div class="slide" id="s28b">
+  <h2>B.1b &mdash; PreToolUse vs PostToolUse: When to Use Which</h2>
+  <div class="two-col">
+    <div class="card" style="border-left: 4px solid #e67e22;">
+      <h3>PreToolUse &mdash; "Should this tool run at all?"</h3>
+      <p>Fires <b>before</b> the tool executes. Use it to <b>inspect, validate, or block</b> the call.</p>
+      <h4>Use When:</h4>
+      <ul>
+        <li><b>Blocking dangerous operations</b> &mdash; prevent <code>rm -rf /</code>, <code>DROP TABLE</code>, force pushes</li>
+        <li><b>Validating inputs</b> &mdash; check that a file path is within allowed directories before Write executes</li>
+        <li><b>Enforcing policy before execution</b> &mdash; verify refund policy was checked before <code>process_refund</code> runs</li>
+        <li><b>Rate limiting</b> &mdash; block API calls if quota is exceeded</li>
+      </ul>
+      <h4>Exam Examples:</h4>
+      <table>
+        <tr><th>Scenario</th><th>Why PreToolUse</th></tr>
+        <tr><td>Block Bash commands containing <code>rm -rf</code></td><td>Must prevent execution <b>before</b> damage occurs &mdash; can't undo a delete</td></tr>
+        <tr><td>Validate refund amount &le; policy limit before <code>process_refund</code></td><td>Cheaper to reject upfront than reverse a processed refund</td></tr>
+        <tr><td>Ensure file writes stay within project directory</td><td>Security boundary &mdash; must block before the write happens</td></tr>
+        <tr><td>Prevent Bash from running <code>git push --force</code></td><td>Irreversible operation &mdash; block before execution</td></tr>
+      </table>
+<pre><code>// PreToolUse hook: block dangerous Bash commands
+// matcher: "Bash"
+#!/bin/bash
+# stdin receives: {"tool_name":"Bash","tool_input":{"command":"rm -rf /"}}
+INPUT=$(cat)
+CMD=$(echo "$INPUT" | jq -r '.tool_input.command')
+if echo "$CMD" | grep -qE 'rm -rf|DROP TABLE|--force'; then
+  echo "Blocked: dangerous command detected" >&2
+  exit 2  # EXIT 2 = BLOCK the tool call
+fi
+exit 0    # EXIT 0 = allow it to proceed</code></pre>
+    </div>
+    <div class="card" style="border-left: 4px solid #3498db;">
+      <h3>PostToolUse &mdash; "What happened? Is the result valid?"</h3>
+      <p>Fires <b>after</b> the tool succeeds. Use it to <b>inspect results, normalize data, enforce ordering, or log</b>.</p>
+      <h4>Use When:</h4>
+      <ul>
+        <li><b>Data normalization</b> &mdash; convert timestamps from 3 different formats into ISO 8601 after <code>lookup_order</code></li>
+        <li><b>Enforcing tool ordering</b> &mdash; verify <code>get_customer</code> was called before allowing <code>process_refund</code></li>
+        <li><b>Result validation</b> &mdash; check that a subagent's Task result has required fields</li>
+        <li><b>Audit logging</b> &mdash; log every Edit/Write for compliance after execution</li>
+        <li><b>Auto-linting</b> &mdash; run linter on file after Edit/Write completes</li>
+      </ul>
+      <h4>Exam Examples:</h4>
+      <table>
+        <tr><th>Scenario</th><th>Why PostToolUse</th></tr>
+        <tr><td>Normalize order data (Unix epoch + ISO + MM/DD) into consistent format</td><td>Data already fetched &mdash; transform <b>after</b> retrieval so agent sees clean data</td></tr>
+        <tr><td>Verify <code>get_customer</code> was called before <code>process_refund</code> executes</td><td>Track call history &mdash; on <code>process_refund</code> result, check session state for prerequisite calls</td></tr>
+        <tr><td>Validate subagent Task result has required fields</td><td>Result already returned &mdash; validate structure <b>after</b> completion</td></tr>
+        <tr><td>Run <code>eslint --fix</code> after every Edit/Write</td><td>Code already written &mdash; auto-fix formatting <b>after</b> the edit</td></tr>
+      </table>
+<pre><code>// PostToolUse hook: normalize timestamps after lookup_order
+// matcher: "mcp__crm__lookup_order"
+#!/bin/bash
+INPUT=$(cat)
+RESULT=$(echo "$INPUT" | jq -r '.tool_result')
+# Normalize all date formats to ISO 8601
+echo "$RESULT" | jq '
+  .dates |= map(
+    if test("^[0-9]+$") then (tonumber | todate)
+    elif test("^[0-9]{2}/") then strptime("%m/%d/%Y") | strftime("%Y-%m-%dT%H:%M:%SZ")
+    else . end
+  )
+'
+exit 0</code></pre>
+    </div>
+  </div>
+  <div class="card" style="margin-top: 15px;">
+    <h3>Decision Flowchart: Which Hook Do I Need?</h3>
+    <table>
+      <tr><th>Ask Yourself</th><th>If Yes &rarr;</th><th>Example</th></tr>
+      <tr><td>Can damage occur if the tool runs?</td><td><b>PreToolUse</b> (block it)</td><td>Destructive Bash commands, unauthorized file writes</td></tr>
+      <tr><td>Do I need to validate inputs before execution?</td><td><b>PreToolUse</b> (validate &amp; block)</td><td>Check refund amount &le; $500 before processing</td></tr>
+      <tr><td>Do I need to transform/normalize the result?</td><td><b>PostToolUse</b> (transform)</td><td>Standardize date formats from different backends</td></tr>
+      <tr><td>Do I need to verify a prerequisite tool was already called?</td><td><b>PostToolUse</b> (check history)</td><td>Ensure get_customer ran before process_refund</td></tr>
+      <tr><td>Do I need to log or audit what happened?</td><td><b>PostToolUse</b> (log)</td><td>Record all file modifications for compliance</td></tr>
+      <tr><td>Do I need to auto-fix or lint the output?</td><td><b>PostToolUse</b> (post-process)</td><td>Run linter after code edits</td></tr>
+    </table>
+  </div>
+  <div class="exam-tip"><b>Quick mental model:</b> <code>PreToolUse</code> = <b>gatekeeper</b> ("Can you enter?"). <code>PostToolUse</code> = <b>inspector</b> ("What did you bring back?"). If the action is <b>irreversible</b> (delete, refund, push), you MUST use PreToolUse to block it &mdash; PostToolUse is too late. If you need to <b>clean up or verify results</b>, PostToolUse is the right choice because the data doesn't exist until after execution.</div>
+  <div class="warning"><b>Common exam trap:</b> "Enforce tool ordering" could be either hook. The exam typically frames it as PostToolUse (check session history for prerequisite calls). But "block a tool unless prerequisites met" is PreToolUse. Read the question carefully &mdash; <b>blocking</b> = Pre, <b>verifying after the fact</b> = Post.</div>
 </div>
 
 <!-- SLIDE 29: Exam Scenarios & Core Principles (NEW) -->
